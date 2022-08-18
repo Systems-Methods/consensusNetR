@@ -1,0 +1,22 @@
+Package: consensusNet
+Title: What the Package Does (one line, title case)
+Version: 0.1
+Authors@R: c(
+  person("Thomas", "Corey", email = "thomas.corey@sagebase.org", role = c("aut", "cre")),
+  person("Michael", "Mason", email = "michael.mason@sagebase.org", role = c("aut")))
+Description: consensusNet provides tools for combining the results of metagene 
+  clustering in different studies, datasets, and using different methods. 
+  It combines results and finds consensus communities of metagenes between 
+  studies which appear to represent similar metagenes (gene signatures), and 
+  tagging genes with their respective communities.
+Depends: R (>= 3.5)
+Imports:
+  Matrix,
+  MCL,
+  Rfast,
+  data.table,
+  org.Hs.eg.db
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.0.2
