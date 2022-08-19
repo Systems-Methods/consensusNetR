@@ -527,12 +527,18 @@ get_gene_map_per_dataset <- function(community, n_metagenes,
 }
 
 
-compressMetaGenes <- function(y,method = "none",w=NULL)
+compressMetaGenes <- function(y,method = "none",w=NULL, dynamic_thresh = .65)
 {
   if(is.null(w)){
     ret <- apply(y,1,mean,na.rm = T);
   }else if(w == "Dynamic"){
-    weights <- apply(y,2,function(x){ x <- sort(x,decreasing = T); return(mean(x[1:5]) - .5)})
+    weights <- apply(y,2,function(x){ x <- sort(x,decreasing = T); return(mean(x[1:5]))})
+    print(weights)
+    
+    weights <- weights -dynamic_thresh
+    weights[weights < 0 | is.na(weights)] <- 0
+    
+    print(weights)
     ret     <- apply(y,1,weighted.mean,w=weights,na.rm=T)
   }else {
     ret <- apply(y,1,weighted.mean,w=w,na.rm=T)
@@ -576,60 +582,35 @@ compressMetaGenes <- function(y,method = "none",w=NULL)
 #' compute_mean_meta_genes(comms,ma,network_file_list = network_file_list)
 #' }
 compute_mean_meta_genes <- function(consensus,
-                                    rbh,
-                                    network_file_list = list(),
-                                    network_file_dir = NULL,
+                                    network_membership_list, 
                                     weights = NULL,
+                                    gene_cohort_N = 3,
                                     compressIntra = "first")
 {
-  if ((length(network_file_list) == 0 & is.null(network_file_dir))) {
-    stop("get_gene_community_membership requires either a network_file_list or a
-         network_file_dir, or both")
-  }
-  
-  if (!is.null(network_file_dir)) {
-    network_file_list <- append(
-      network_file_list,
-      list.files(network_file_dir, full.names = TRUE)
-    )
-  }
-  
-  n_metagenes <- lapply(
-    network_file_list,
-    function(x) {
-      ncol(as.matrix(data.table::fread(x))) - 1
-    }
-  )
-  
-  u_genes <-  table(unlist(lapply(
-    network_file_list,
-    function(x) {
-      as.data.frame(data.table::fread(x)[,1] )
-    }
-  )))
-  u_genes <- sort(names(u_genes[u_genes >= 3]))
+
+  n_metagenes <- lapply(network_membership_list, ncol)
+  u_genes     <-  table(unlist(lapply(network_membership_list, rownames)))
+  u_genes     <- sort(names(u_genes[u_genes >= gene_cohort_N]))
   
   # collect gene loadings to compute average gene loadings (actually kme's) across each dataset
   clusterLoadings   <- list()
   
   for (c in as.character(sort(unique(consensus$Cluster)))) {
     clusterLoadings[[c]] <- matrix(NA,length(u_genes),
-                                   length(network_file_list))
+                                   length(network_membership_list))
   }
   
   start <- 0
   stop  <- 0
-  for (i in seq_len(length(network_file_list)))
+  for (i in seq_len(length(network_membership_list)))
   {
-    start <- stop + 1
-    stop  <- start + n_metagenes[[i]] - 1
+    start    <- stop + 1
+    stop     <- start + n_metagenes[[i]] - 1
     loc_comm <- consensus$Cluster[start:stop]
     
-    cat(paste("loading", network_file_list[[i]], "\n"))
-    network <- as.matrix(data.table::fread(network_file_list[[i]], data.table = F))
-    row.names(network) <- network[, 1]; network <- network[, -1]
-    
-    mods <- consensus$Cluster[start:stop]
+    cat(paste("loading", names(network_membership_list)[i], "\n"))
+    network <- as.matrix(network_membership_list[[i]])
+    mods    <- consensus$Cluster[start:stop]
     
     for (c in as.character(sort(unique(mods))))
     {
