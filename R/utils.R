@@ -33,6 +33,7 @@ compute_2Network_RBH_Overlap_Based <- function(metaX,metaY, top_n = 50, memb_cut
   
   edges      <- as.matrix(x2y[which(x2y$x2yName == y2x$y2xMap),])
   ret[edges] <- overlap[edges]
+  ret        <- ret/top_n
   return(ret)
 }
 
