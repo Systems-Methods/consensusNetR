@@ -535,7 +535,7 @@ compressMetaGenes <- function(y,method = "none",w=NULL, dynamic_thresh = .65)
     weights <- apply(y,2,function(x){ x <- sort(x,decreasing = T); return(mean(x[1:5]))})
     print(weights)
     
-    weights <- weights -dynamic_thresh
+    weights <- weights - dynamic_thresh
     weights[weights < 0 | is.na(weights)] <- 0
     
     print(weights)
