@@ -1,3 +1,39 @@
+fisherZ <- function(r){.5*(log(1+r)-log(1-r))}
+
+compare_networks <- function(net_memb_1, net_memb_2,memb_cut = 0.5, na_flag = "none")
+{
+  net_memb_1 <- net_memb_1[rownames(net_memb_1) %in% rownames(net_memb_2),]
+  net_memb_2 <- net_memb_2[match(rownames(net_memb_1), rownames(net_memb_2)),]
+  
+  comms_1    <- apply(net_memb_1, 1, function(x){x[x < memb_cut] <- 0; ind <- which(x == max(x)); if(length(ind) > 1){ind <- NA}; return(ind)})
+  comms_2    <- apply(net_memb_2, 1, function(x){x[x < memb_cut] <- 0; ind <- which(x == max(x)); if(length(ind) > 1){ind <- NA}; return(ind)})
+  
+  if(na_flag == "none"){ inds <- rep(T,length(comms_1))
+  }else if(na_flag == "both"){ inds <- (!is.na(comms_1)) & !(is.na(comms_2))
+  }else if(na_flag == "either"){ inds <- (!is.na(comms_1)) | (!is.na(comms_2))
+  }else {print("ERROR: na_flag must be \"none\", \"both\", or \"either\"" )}
+  
+  comms_1    <- comms_1[inds]
+  comms_2    <- comms_2[inds]  
+  net_memb_1 <- net_memb_1[inds,]
+  net_memb_2 <- net_memb_2[inds,]
+  adjRand    <- mclust::adjustedRandIndex(comms_1,comms_2)
+  
+  net_memb_1 <- fisherZ(net_memb_1)
+  net_memb_2 <- fisherZ(net_memb_2)
+  dist_1     <- as.dist(Rfast::cora(t(net_memb_1)))
+  dist_2     <- as.dist(Rfast::cora(t(net_memb_2)))
+  cor_of_cor <- cor(fisherZ(unlist(dist_1)), fisherZ(unlist(dist_2)))  
+  
+  na_inds    <- is.na(comms_1) | is.na(comms_2)
+  dend_1     <- hclust(1-dist_1)
+  dend_2     <- hclust(1-dist_2)
+  cor_coph   <- dendextend::cor_cophenetic(dend_1, dend_2)
+  return(data.frame(adjRand, cor_of_cor, cor_coph))
+}
+
+
+
 #' Compute RBH (reciprocal best hits) for Two Networks based on Overlap of top genes
 #'
 #' Compute RBH (reciprocal best hits) for Two Networks based on Overlap of top
