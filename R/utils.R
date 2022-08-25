@@ -1,9 +1,11 @@
 fisherZ <- function(r){.5*(log(1+r)-log(1-r))}
 
-compare_networks <- function(net_memb_1, net_memb_2,memb_cut = 0.5, na_flag = "none")
+compare_networks <- function(net_memb_1, net_memb_2,K, memb_cut = 0.5, na_flag = "none")
 {
-  net_memb_1 <- net_memb_1[rownames(net_memb_1) %in% rownames(net_memb_2),]
-  net_memb_2 <- net_memb_2[match(rownames(net_memb_1), rownames(net_memb_2)),]
+  K_1 <- min(ncol(net_memb_1), K)
+  K_2 <- min(ncol(net_memb_2), K)
+  net_memb_1 <- net_memb_1[rownames(net_memb_1) %in% rownames(net_memb_2),1:K_1]
+  net_memb_2 <- net_memb_2[match(rownames(net_memb_1), rownames(net_memb_2)),1:K_2]
   
   comms_1    <- apply(net_memb_1, 1, function(x){x[x < memb_cut] <- 0; ind <- which(x == max(x)); if(length(ind) > 1){ind <- NA}; return(ind)})
   comms_2    <- apply(net_memb_2, 1, function(x){x[x < memb_cut] <- 0; ind <- which(x == max(x)); if(length(ind) > 1){ind <- NA}; return(ind)})
