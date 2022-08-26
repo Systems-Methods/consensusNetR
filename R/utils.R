@@ -1,6 +1,8 @@
+# utility function for Fisher's z transform
 fisherZ <- function(r){.5*(log(1+r)-log(1-r))}
 
-compare_networks <- function(net_memb_1, net_memb_2,K, memb_cut = 0.5, na_flag = "none")
+
+compare_networks <- function(net_memb_1, net_memb_2,K= 75, memb_cut = 0.5, na_flag = "none")
 {
   K_1 <- min(ncol(net_memb_1), K)
   K_2 <- min(ncol(net_memb_2), K)
@@ -382,7 +384,7 @@ construct_meta_rbh <- function(network_file_list = list(),
 #' network_file_list <- list.files(network_file_dir, full.names = TRUE)
 #' ma <- construct_meta_rbh(
 #'   network_file_list = network_file_list,
-#'   upper_quant = .99,
+#'   upper_quant = .99,``
 #'   lower_quant = .05, max_rank = 2
 #' )
 #' comms <- detect_metagene_communities(ma)
@@ -569,7 +571,7 @@ compressMetaGenes <- function(y,method = "none",w=NULL, dynamic_thresh = .65)
 {
   if(is.null(w)){
     ret <- apply(y,1,mean,na.rm = T);
-  }else if(w == "Dynamic"){
+  }else if(length(w) ==1 & w == "Dynamic"){
     weights <- apply(y,2,function(x){ x <- sort(x,decreasing = T); return(mean(x[1:5]))})
     print(weights)
     
