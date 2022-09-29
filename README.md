@@ -22,8 +22,7 @@ Install the version from BMS BioGit with:
 
 ``` r
 remotes::install_github(
-  repo = "Systems-Immunology/consensusNetR", 
-  host = "https://biogit.pri.bms.com/api/v3"
+  repo = "Systems-Methods/consensusNetR"
 )
 ```
 
@@ -31,7 +30,7 @@ or:
 
 ``` r
 remotes::install_git(
-  "https://biogit.pri.bms.com/Systems-Immunology/consensusNetR.git"
+  "https://github.com/Systems-Methods/consensusNetR"
   )
 ```
 
