@@ -249,6 +249,7 @@ compute_2study_rbh_Correlation_Based <- function(meta_g1, meta_g2, lower_quant =
 construct_mulit_rbh_overlap_based <- function(network_membership_list,
                                               top_n = 50,
                                               memb_cut = 0) {
+  metaStudies <- names(network_membership_list)
   ns          <- sapply(network_membership_list, ncol)
   N           <- sum(ns)
   comms       <- unlist(sapply(names(network_membership_list),
