@@ -1,22 +1,54 @@
-Package: consensusNet
-Title: What the Package Does (one line, title case)
-Version: 0.1
-Authors@R: c(
-  person("Thomas", "Corey", email = "thomas.corey@sagebase.org", role = c("aut", "cre")),
-  person("Michael", "Mason", email = "michael.mason@sagebase.org", role = c("aut")))
+Package: consensusNetR
+Title: R Package for combining networks into a consensus network
+Version: 0.0.0.9000
+Authors@R: 
+  c(
+    person(given = "Mike",
+           family = "Mason",
+           role = c("aut", "cre"),
+           email = "mike.mason@bms.com",
+           comment = c(ORCID = "0000-0002-5652-7739")
+           ),
+    person(given = "Jimmy",
+           family = "Fulp",
+           role = c("aut"),
+           email = "william.fulp@bms.com",
+           comment = c(ORCID = "0000-0001-6888-0794")
+    ),
+    person(given = "Thomas",
+           family = "Corey",
+           role = c("aut"),
+           email = "",
+           comment = c(ORCID = "0000-0003-3044-2072")
+    ),
+    person(given = "Alexandre",
+           family = "Alloy",
+           role = c("aut"),
+           email = "alexandre.alloy@bms.com",
+           comment = c(ORCID = "0000-0001-8280-0543")
+    )
+  )
 Description: consensusNet provides tools for combining the results of metagene 
   clustering in different studies, datasets, and using different methods. 
   It combines results and finds consensus communities of metagenes between 
   studies which appear to represent similar metagenes (gene signatures), and 
   tagging genes with their respective communities.
 Depends: R (>= 3.5)
+biocViews:
 Imports:
+  data.table,
+  dendextend,
   Matrix,
   MCL,
-  Rfast,
-  data.table,
-  org.Hs.eg.db
+  mclust,
+  plyr,
+  tidyr
+Suggests:
+  Rfast
 License: MIT + file LICENSE
 Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.1
+URL: https://github.com/Systems-Methods/consensusNetR
+BugReports: https://github.com/Systems-Methods/consensusNetR/issues
 LazyData: true
-RoxygenNote: 7.0.2

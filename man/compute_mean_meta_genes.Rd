@@ -6,33 +6,26 @@
 \usage{
 compute_mean_meta_genes(
   consensus,
-  rbh,
-  network_file_list = list(),
-  network_file_dir = NULL,
+  network_membership_list,
   weights = NULL,
+  gene_cohort_N = 3,
   compressIntra = "first"
 )
 }
 \arguments{
-\item{rbh}{matrix indicating edges of recipracol best hit network}
+\item{consensus}{communities output from \code{\link[MCL:mcl]{MCL::mcl()}}, a list containing element
+$Cluster with a vector of the cluster associated with each index.}
 
-\item{network_file_list}{a list of paths to files which can be read by
-data.table::fread. These constitute the metagene datasets. Each file should
-have some sort of common gene_id as the first column}
-
-\item{network_file_dir}{a directory in which all files are relevant to the
-meta reciprocal best hits, all readable by fread. These will be added to the
-file list. Each file should have some sort of common gene_id as the first
-column.}
+\item{network_membership_list}{a list containing community membership scores for each
+network. Where rownames contain unique gene ids and column names are community names}
 
 \item{weights}{weights for weighted average of based on study attributes,
 not yet implemented}
 
-\item{compressIntra}{indicates how to deal with multiple metagenes beloning
-to the same comminity within one study-level network}
+\item{gene_cohort_N}{gene_cohort_N}
 
-\item{comms}{communities output from MCL::mcl, a list containing element
-$Cluster with a vector of the cluster associated with each index.}
+\item{compressIntra}{indicates how to deal with multiple metagenes belonging
+to the same community within one study-level network}
 }
 \value{
 matrix with average loadings (metagenes) across studies included from
@@ -42,7 +35,8 @@ network_file_list
 Compute the average metagene across studies for each community
 }
 \examples{
-network_file_dir <- system.file("extdata", package = "consensusNet")
+\dontrun{
+network_file_dir <- system.file("extdata", package = "consensusNetR")
 network_file_list <- list.files(network_file_dir, full.names = TRUE)
 ma <- construct_meta_rbh(
   network_file_list = network_file_list,
@@ -50,5 +44,6 @@ ma <- construct_meta_rbh(
   lower_quant = .05, max_rank = 2
 )
 comms <- detect_metagene_communities(ma)
-compute_mean_meta_genes <- function(commms,ma,network_file_list = network_file_list)
+compute_mean_meta_genes(comms,ma,network_file_list = network_file_list)
+}
 }

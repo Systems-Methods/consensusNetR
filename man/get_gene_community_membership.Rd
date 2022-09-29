@@ -10,8 +10,8 @@ get_gene_community_membership(
   network_file_list = list(),
   network_file_dir = NULL,
   include_nonmembers = FALSE,
-  compress = T,
-  rank_based = T
+  compress = TRUE,
+  rank_based = TRUE
 )
 }
 \arguments{
@@ -51,7 +51,8 @@ corresponds to that community.
 Get Consensus Membership of Genes in Metagene Communities
 }
 \examples{
-network_file_dir <- system.file("extdata", package = "consensusNet")
+\dontrun{
+network_file_dir <- system.file("extdata", package = "consensusNetR")
 network_file_list <- list.files(network_file_dir, full.names = TRUE)
 ma <- construct_meta_rbh(
   network_file_list = network_file_list,
@@ -62,4 +63,5 @@ comms <- detect_metagene_communities(ma)
 consensus <- get_gene_community_membership(comms, 2,
   network_file_dir = network_file_dir
 )
+}
 }

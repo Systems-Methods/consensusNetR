@@ -39,7 +39,7 @@ reciprocal best hits network. Pure reciprocal best hits uses max_rank of 1.}
 
 \item{sparse}{logical, use a sparse matrix to store network?}
 
-\item{method}{string, same as \code{\link[stats]{cor}}}
+\item{method}{string, same as \code{\link[stats:cor]{stats::cor()}}}
 
 \item{binary}{logical, indicates whether or not the meta residual best hits
 matrix should show correlations or simply binary (as.numeric(correlation >
@@ -60,8 +60,10 @@ with the unique file names, such that the dimension names are guaranteed to
 be unique.
 }
 \examples{
-network_file_dir <- system.file("extdata", package = "consensusNet")
+\dontrun{
+network_file_dir <- system.file("extdata", package = "consensusNetR")
 network_file_list <- list.files(network_file_dir, full.names = TRUE)
 ma <- construct_meta_rbh( network_file_list = network_file_list,
   upper_quant = .99, lower_quant = .05, max_rank = 2)
+  }
 }

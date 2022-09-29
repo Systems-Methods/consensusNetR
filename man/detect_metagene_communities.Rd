@@ -4,14 +4,16 @@
 \alias{detect_metagene_communities}
 \title{Detect Communities in Adjacency/Reciprocal Best Hits Matrix}
 \usage{
-detect_metagene_communities(rbh_mat)
+detect_metagene_communities(rbh_mat, expansion = 2)
 }
 \arguments{
 \item{rbh_mat}{adjacency/reciprocal best hits matrix, as output by
-\code{\link[consensusNet]{construct_meta_rbh}}}
+\code{\link[=construct_meta_rbh]{construct_meta_rbh()}}}
+
+\item{expansion}{expansion parameter}
 }
 \value{
-The output of \code{\link[MCL]{mcl}}, renamed so that the clusters
+The output of \code{\link[MCL:mcl]{MCL::mcl()}}, renamed so that the clusters
 are in order of size (1 being the largest)
 }
 \description{
@@ -20,12 +22,14 @@ cluster/community number that each metagene is associated with, renamed so
 that the clusters are in order of size (1 being the largest)
 }
 \examples{
-network_file_dir <- system.file("extdata", package = "consensusNet")
+\dontrun{
+network_file_dir <- system.file("extdata", package = "consensusNetR")
 network_file_list <- list.files(network_file_dir, full.names = TRUE)
 ma <- construct_meta_rbh(
   network_file_list = network_file_list,
-  upper_quant = .99,
+  upper_quant = .99,``
   lower_quant = .05, max_rank = 2
 )
 comms <- detect_metagene_communities(ma)
+}
 }

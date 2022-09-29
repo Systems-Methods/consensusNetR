@@ -1,37 +1,55 @@
 # utility function for Fisher's z transform
-fisherZ <- function(r){.5*(log(1+r)-log(1-r))}
+fisherZ <- function(r){.5*(log(1 + r) - log(1 - r))}
 
 
-compare_networks <- function(net_memb_1, net_memb_2,K= 75, memb_cut = 0.5, na_flag = "none")
-{
+compare_networks <- function(net_memb_1,
+                             net_memb_2,
+                             K= 75,
+                             memb_cut = 0.5,
+                             na_flag = "none") {
   K_1 <- min(ncol(net_memb_1), K)
   K_2 <- min(ncol(net_memb_2), K)
   net_memb_1 <- net_memb_1[rownames(net_memb_1) %in% rownames(net_memb_2),1:K_1]
   net_memb_2 <- net_memb_2[match(rownames(net_memb_1), rownames(net_memb_2)),1:K_2]
-  
-  comms_1    <- apply(net_memb_1, 1, function(x){x[x < memb_cut] <- 0; ind <- which(x == max(x)); if(length(ind) > 1){ind <- NA}; return(ind)})
-  comms_2    <- apply(net_memb_2, 1, function(x){x[x < memb_cut] <- 0; ind <- which(x == max(x)); if(length(ind) > 1){ind <- NA}; return(ind)})
-  
-  if(na_flag == "none"){ inds <- rep(T,length(comms_1))
-  }else if(na_flag == "both"){ inds <- (!is.na(comms_1)) & !(is.na(comms_2))
-  }else if(na_flag == "either"){ inds <- (!is.na(comms_1)) | (!is.na(comms_2))
-  }else {print("ERROR: na_flag must be \"none\", \"both\", or \"either\"" )}
-  
+
+  comms_1    <- apply(net_memb_1, 1,
+                      function(x){
+                        x[x < memb_cut] <- 0
+                        ind <- which(x == max(x))
+                        if (length(ind) > 1) {ind <- NA}
+                        return(ind)})
+  comms_2    <- apply(net_memb_2, 1,
+                      function(x){
+                        x[x < memb_cut] <- 0;
+                        ind <- which(x == max(x))
+                        if (length(ind) > 1) {ind <- NA}
+                        return(ind)})
+
+  if (na_flag == "none") {
+    inds <- rep(TRUE,length(comms_1))
+  } else if (na_flag == "both" ) {
+    inds <- (!is.na(comms_1)) & !(is.na(comms_2))
+  } else if (na_flag == "either") {
+    inds <- (!is.na(comms_1)) | (!is.na(comms_2))
+  } else {
+    stop("na_flag must be \"none\", \"both\", or \"either\"" )
+  }
+
   comms_1    <- comms_1[inds]
-  comms_2    <- comms_2[inds]  
+  comms_2    <- comms_2[inds]
   net_memb_1 <- net_memb_1[inds,]
   net_memb_2 <- net_memb_2[inds,]
   adjRand    <- mclust::adjustedRandIndex(comms_1,comms_2)
-  
+
   net_memb_1 <- fisherZ(net_memb_1)
   net_memb_2 <- fisherZ(net_memb_2)
-  dist_1     <- as.dist(Rfast::cora(t(net_memb_1)))
-  dist_2     <- as.dist(Rfast::cora(t(net_memb_2)))
-  cor_of_cor <- cor(fisherZ(unlist(dist_1)), fisherZ(unlist(dist_2)))  
-  
-  na_inds    <- is.na(comms_1) | is.na(comms_2)
-  dend_1     <- hclust(1-dist_1)
-  dend_2     <- hclust(1-dist_2)
+  dist_1     <- stats::as.dist(Rfast::cora(t(net_memb_1)))
+  dist_2     <- stats::as.dist(Rfast::cora(t(net_memb_2)))
+  cor_of_cor <- stats::cor(fisherZ(unlist(dist_1)), fisherZ(unlist(dist_2)))
+
+  # na_inds    <- is.na(comms_1) | is.na(comms_2)
+  dend_1     <- stats::hclust(1 - dist_1)
+  dend_2     <- stats::hclust(1 - dist_2)
   cor_coph   <- dendextend::cor_cophenetic(dend_1, dend_2)
   return(data.frame(adjRand, cor_of_cor, cor_coph))
 }
@@ -49,28 +67,51 @@ compare_networks <- function(net_memb_1, net_memb_2,K= 75, memb_cut = 0.5, na_fl
 #' Row names of these matrices must be gene names, and the column names should be
 #' unique community names.
 #' @param top_n number of top genes to usin in compuitng overlap
-#' @inheritParams construct_meta_rbh
+#' @param memb_cut membership threshold for stricter thresholding. Only genes with
+#' membership score greater the threshold are used
 #'
 #' @return Matrix with rows matching the columns in meta_g1 and columns
 #' matching the columns of meta_g2, with values 1 indicating two metagenes are a
 #' hit, and 0 indicating that they are not.
 #' @export
 #'
-compute_2Network_RBH_Overlap_Based <- function(metaX,metaY, top_n = 50, memb_cut = 0) #simpler approach that doesn't punish the overlap measure for genes not shared by platforms
-{
-  ret        <- matrix(0, ncol(metaX), ncol(metaY))
-  metaX      <- metaX[rownames(metaX) %in% rownames(metaY),]
-  metaY      <- metaY[match(rownames(metaX),rownames(metaY)),]
-  rankX      <- apply(apply(-metaX,2,rank) <= top_n & metaX >= memb_cut, 2, as.numeric)
-  rankY      <- apply(apply(-metaY,2,rank) <= top_n & metaY >= memb_cut, 2, as.numeric)
-  
-  overlap    <- t(rankX) %*% rankY; rm(metaX,metaY, rankX,rankY);gc()
-  x2y        <- alply(overlap, 1, function(x){ret<-which(x==max(x) & x !=0); if(length(ret)==0){return(NA)}else{return(ret[1])}}); 
-  y2x        <- alply(overlap, 2, function(x){ret<-which(x==max(x) & x !=0); if(length(ret)==0){return(NA)}else{return(ret[1])}}); 
-  x2y        <- data.frame(x2yName=as.numeric(names(x2y)),x2yMap=unlist(x2y))
-  y2x        <- data.frame(y2xName=as.numeric(names(y2x)),y2xMap=unlist(y2x))   
+compute_2Network_RBH_Overlap_Based <- function(meta_g1,
+                                               meta_g2,
+                                               top_n = 50,
+                                               memb_cut = 0) {
+  #simpler approach that doesn't punish the overlap measure for genes not shared by platforms
+  ret        <- matrix(0, ncol(meta_g1), ncol(meta_g2))
+  meta_g1      <- meta_g1[rownames(meta_g1) %in% rownames(meta_g2),]
+  meta_g2      <- meta_g2[match(rownames(meta_g1),rownames(meta_g2)),]
+  rankX      <- apply(apply(-meta_g1,2,rank) <= top_n & meta_g1 >= memb_cut,
+                      2, as.numeric)
+  rankY      <- apply(apply(-meta_g2,2,rank) <= top_n & meta_g2 >= memb_cut,
+                      2, as.numeric)
+
+  overlap    <- t(rankX) %*% rankY
+  rm(meta_g1,meta_g2, rankX,rankY)
+  x2y        <- plyr::alply(overlap, 1,
+                            function(x) {
+                              ret <- which(x == max(x) & x != 0);
+                              if (length(ret) == 0) {
+                                return(NA)
+                              } else {
+                                return(ret[1])
+                              }});
+  y2x        <- plyr::alply(overlap, 2,
+                            function(x) {
+                              ret <- which(x == max(x) & x != 0)
+                              if (length(ret) == 0) {
+                                return(NA)
+                              } else {
+                                return(ret[1])
+                              }});
+  x2y        <- data.frame(x2yName = as.numeric(names(x2y)),
+                           x2yMap = unlist(x2y))
+  y2x        <- data.frame(y2xName = as.numeric(names(y2x)),
+                           y2xMap = unlist(y2x))
   y2x        <- y2x[match(x2y$x2yMap,y2x$y2xName),]
-  
+
   edges      <- as.matrix(x2y[which(x2y$x2yName == y2x$y2xMap),])
   ret[edges] <- overlap[edges]
   ret        <- ret/top_n
@@ -101,7 +142,8 @@ compute_2Network_RBH_Overlap_Based <- function(metaX,metaY, top_n = 50, memb_cut
 #' @export
 #'
 #' @examples
-#' network_file_dir <- system.file("extdata", package = "consensusNet")
+#' \dontrun{
+#' network_file_dir <- system.file("extdata", package = "consensusNetR")
 #' network_file_list <- list.files(network_file_dir, full.names = TRUE)
 #' ds1 <- as.matrix(data.table::fread(network_file_list[[1]]))
 #' row.names(ds1) <- ds1[, 1]
@@ -118,14 +160,15 @@ compute_2Network_RBH_Overlap_Based <- function(metaX,metaY, top_n = 50, memb_cut
 #'   ".*/", "",
 #'   network_file_list[[2]]
 #' ))
-#' rbh <- compute_2study_rbh(ds1, ds2)
+#' rbh <- compute_2study_rbh_Correlation_Based(ds1, ds2)
+#' }
 compute_2study_rbh_Correlation_Based <- function(meta_g1, meta_g2, lower_quant = 0,
-                               upper_quant = 1.0, max_rank = 1,
-                               abs = FALSE, sparse = TRUE, method = "pearson") {
+                                                 upper_quant = 1.0, max_rank = 1,
+                                                 abs = FALSE, sparse = TRUE, method = "pearson") {
 
   # Filter for rows with common gene names
-  meta_g1 <- na.omit(meta_g1)
-  meta_g2 <- na.omit(meta_g2)
+  meta_g1 <- stats::na.omit(meta_g1)
+  meta_g2 <- stats::na.omit(meta_g2)
   common_rows <- intersect(row.names(meta_g1), row.names(meta_g2))
   meta_g1 <- meta_g1[common_rows, ]
   meta_g2 <- meta_g2[common_rows, ]
@@ -136,8 +179,8 @@ compute_2study_rbh_Correlation_Based <- function(meta_g1, meta_g2, lower_quant =
   } else {
     rbh <- stats::cor(meta_g1, meta_g2, method = method)
   }
-  gen_cutoff <- stats::quantile(rbh, upper_quant,na.rm=T)
-  rbh_threshold <- stats::quantile(rbh, lower_quant,na.rm=T)
+  gen_cutoff <- stats::quantile(rbh, upper_quant,na.rm = TRUE)
+  rbh_threshold <- stats::quantile(rbh, lower_quant,na.rm = TRUE)
 
 
   # Construct a list representing the best hit(s) for each row (up to max_rank
@@ -166,27 +209,27 @@ compute_2study_rbh_Correlation_Based <- function(meta_g1, meta_g2, lower_quant =
   temp <- lapply(1:row_count, function(row_num) {
     lapply(1:col_count, function(col_num) {
       return(ifelse((rbh[row_num, col_num] >= gen_cutoff) |
-        (col_num %in% row_hits[[row_num]] &
-          row_num %in% col_hits[[col_num]] &
-          rbh[row_num, col_num] >= rbh_threshold),
-      rbh[row_num, col_num],
-      0
+                      (col_num %in% row_hits[[row_num]] &
+                         row_num %in% col_hits[[col_num]] &
+                         rbh[row_num, col_num] >= rbh_threshold),
+                    rbh[row_num, col_num],
+                    0
       ))
     })
   })
   # Bind these lists into a matrix
   rbh_network <- Matrix::Matrix(as.numeric(do.call(rbind, temp)),
-    nrow = row_count,
-    sparse = sparse,
-    dimnames = list(
-      dimnames(meta_g1)[[2]],
-      dimnames(meta_g2)[[2]]
-    )
+                                nrow = row_count,
+                                sparse = sparse,
+                                dimnames = list(
+                                  dimnames(meta_g1)[[2]],
+                                  dimnames(meta_g2)[[2]]
+                                )
   )
   return(rbh_network)
 }
 
-######## Construct Multi Network Overlap Bases RBH Matrix 
+######## Construct Multi Network Overlap Bases RBH Matrix
 #' Construct Meta Reciprocal Best Hits bases on overlaps
 #'
 #' Iterate through a list containing membership matrices and construct pairwise
@@ -197,37 +240,55 @@ compute_2study_rbh_Correlation_Based <- function(meta_g1, meta_g2, lower_quant =
 #' with the network list names, such that the dimension names are guaranteed to
 #' be unique.
 #'
-#' @param network_membership_list a list containing community membership scores for each 
+#' @param network_membership_list a list containing community membership scores for each
 #' network. Where rownames contain unique gene ids and column names are commuity names
-#' @param top_n the number of top genes based on membership scores with higher scores 
-#' indicating stronger membership in a community 
-#' @param memb_cut membership threshold for stricter thresholding. Only genes with 
+#' @param top_n the number of top genes based on membership scores with higher scores
+#' indicating stronger membership in a community
+#' @param memb_cut membership threshold for stricter thresholding. Only genes with
 #' membership score greater the threshold are used
-construct_mulit_rbh_overlap_based <- function(network_membership_list = list(),
-                                              top_n = 50, 
+construct_mulit_rbh_overlap_based <- function(network_membership_list,
+                                              top_n = 50,
                                               memb_cut = 0) {
   ns          <- sapply(network_membership_list, ncol)
   N           <- sum(ns)
-  comms       <- unlist(sapply(names(network_membership_list),function(x){paste0(x,"_",colnames(network_membership_list[[x]]))}))
-  rbh         <- matrix(0, N,N); colnames(rbh) <- comms;  rownames(rbh) <- comms; 
+  comms       <- unlist(sapply(names(network_membership_list),
+                               function(x){
+                                 paste0(x,"_",
+                                        colnames(network_membership_list[[x]]))}))
+  rbh         <- matrix(0, N,N)
+  colnames(rbh) <- comms
+  rownames(rbh) <- comms;
 
-  rbh_metrics <- matrix(NA, choose(length(network_membership_list),2), 5); 
+  rbh_metrics <- matrix(NA, choose(length(network_membership_list),2), 5);
   cnt         <- 1
 
-  for(i in 1:(length(network_membership_list)-1))
+  for (i in 1:(length(network_membership_list) - 1))
   {
-    for( j in (i+1):length(network_membership_list))
+    for (j in (i + 1):length(network_membership_list))
     {
-      rowStart <- sum(ns[(1:i)-1])+1
-      rowStop  <- rowStart+ns[i]-1
-      colStart <- sum(ns[(1:j)-1])+1
-      colStop  <- colStart+ns[j]-1
-      tempRBH  <- compute_2Network_RBH_Overlap_Based(network_membership_list[[i]], network_membership_list[[j]], top_n = top_n, memb_cut = memb_cut) 
-    
+      rowStart <- sum(ns[(1:i) - 1]) + 1
+      rowStop  <- rowStart + ns[i] - 1
+      colStart <- sum(ns[(1:j) - 1]) + 1
+      colStop  <- colStart + ns[j] - 1
+      tempRBH  <- compute_2Network_RBH_Overlap_Based(
+        network_membership_list[[i]],
+        network_membership_list[[j]],
+        top_n = top_n,
+        memb_cut = memb_cut
+      )
+
       rbh[rowStart:rowStop, colStart:colStop] <- tempRBH
-      print(paste0(metaStudies[i],": ", ncol(network_membership_list[[i]]), " coms, ", metaStudies[j],": ", ncol(network_membership_list[[j]]), " coms, RBH: ", sum(apply(tempRBH > 0,1,sum))," coms"))
-      rbh_metrics[cnt, ] <- c(metaStudies[i],metaStudies[i], ncol(network_membership_list[[i]]), ncol(network_membership_list[[j]]),sum(apply(tempRBH > 0,1,sum)))
-      cnt <- cnt+1
+      message(metaStudies[i],": ",
+              ncol(network_membership_list[[i]]),
+              " coms, ", metaStudies[j],": ",
+              ncol(network_membership_list[[j]]), " coms, RBH: ",
+              sum(apply(tempRBH > 0,1,sum))," coms")
+      rbh_metrics[cnt, ] <- c(metaStudies[i],
+                              metaStudies[i],
+                              ncol(network_membership_list[[i]]),
+                              ncol(network_membership_list[[j]]),
+                              sum(apply(tempRBH > 0,1,sum)))
+      cnt <- cnt + 1
     }
   }
 
@@ -261,7 +322,7 @@ construct_mulit_rbh_overlap_based <- function(network_membership_list = list(),
 #' reciprocal best hits network. Pure reciprocal best hits uses max_rank of 1.
 #' @param abs logical, take absolute values of correlations?
 #' @param sparse logical, use a sparse matrix to store network?
-#' @param method string, same as \code{\link[stats]{cor}}
+#' @param method string, same as [stats::cor()]
 #' @param binary logical, indicates whether or not the meta residual best hits
 #' matrix should show correlations or simply binary (as.numeric(correlation >
 #' 0)) output
@@ -272,10 +333,12 @@ construct_mulit_rbh_overlap_based <- function(network_membership_list = list(),
 #' @export
 #'
 #' @examples
-#' network_file_dir <- system.file("extdata", package = "consensusNet")
+#' \dontrun{
+#' network_file_dir <- system.file("extdata", package = "consensusNetR")
 #' network_file_list <- list.files(network_file_dir, full.names = TRUE)
 #' ma <- construct_meta_rbh( network_file_list = network_file_list,
 #'   upper_quant = .99, lower_quant = .05, max_rank = 2)
+#'   }
 construct_meta_rbh <- function(network_file_list = list(),
                                network_file_dir = NULL, lower_quant = 0,
                                upper_quant = 1.0, max_rank = 1,
@@ -299,58 +362,66 @@ construct_meta_rbh <- function(network_file_list = list(),
   ## network_file_list[rownum] with all other datasets in network_file_list,
   ## unless the combination has been analyzed before (The matrix will be
   ## triangular at this stage)
-  adj_rows_list <- lapply(seq_len(length(network_file_list)), function(file1_index) {
-    file1_name <- network_file_list[[file1_index]]
-    cat(paste("loading", file1_name, "\n"))
-    ds1 <- as.matrix(data.table::fread(file1_name))
-    row.names(ds1) <- ds1[, 1]
-    ds1 <- ds1[, -1]
-    colnames(ds1) <- paste0(colnames(ds1),"_",sub(".*/", "", file1_name))
+  adj_rows_list <- lapply(
+    seq_len(length(network_file_list)),
+    function(file1_index) {
+      file1_name <- network_file_list[[file1_index]]
+      cat(paste("loading", file1_name, "\n"))
+      ds1 <- as.matrix(data.table::fread(file1_name))
+      row.names(ds1) <- ds1[, 1]
+      ds1 <- ds1[, -1]
+      colnames(ds1) <- paste0(colnames(ds1),"_",
+                              sub(".*/", "", file1_name))
 
-    ## For each dataset, including ds1, onward in the network_file_list, compute
-    ## the 2 study network
-    row_list <- lapply(
-      (file1_index):length(network_file_list),
-      function(file2_index) {
-        file2_name <- network_file_list[[file2_index]]
-        ds2 <- as.matrix(data.table::fread(file2_name))
-        row.names(ds2) <- ds2[, 1]
-        ds2 <- ds2[, -1]
-        colnames(ds2) <- paste0(colnames(ds2),"_",sub(".*/", "", file2_name))
-        return(compute_2study_rbh(
-          ds1, ds2, lower_quant, upper_quant,
-          max_rank, abs, sparse, method
-        ))
+      ## For each dataset, including ds1, onward in the network_file_list, compute
+      ## the 2 study network
+      row_list <- lapply(
+        (file1_index):length(network_file_list),
+        function(file2_index) {
+          file2_name <- network_file_list[[file2_index]]
+          ds2 <- as.matrix(data.table::fread(file2_name))
+          row.names(ds2) <- ds2[, 1]
+          ds2 <- ds2[, -1]
+          colnames(ds2) <- paste0(colnames(ds2),"_",
+                                  sub(".*/", "", file2_name))
+          return(compute_2study_rbh_Correlation_Based(
+            ds1, ds2, lower_quant, upper_quant,
+            max_rank, abs, sparse, method
+          ))
+        }
+      )
+
+      ## Nonempty section will be the triangular part of the matrix containing
+      ## non-zero values
+      if (length(row_list) > 1) {
+        nonempty_section <- do.call(cbind, row_list)
+      } else {
+        nonempty_section <- row_list[[1]]
       }
-    )
 
-    ## Nonempty section will be the triangular part of the matrix containing
-    ## non-zero values
-    if (length(row_list) > 1) {
-      nonempty_section <- do.call(cbind, row_list)
-    } else {
-      nonempty_section <- row_list[[1]]
-    }
+      if (file1_index == 1) {
+        return(nonempty_section)
+      }
 
-    if (file1_index == 1) {
-      return(nonempty_section)
-    }
+      ## Create empty section
+      empty_sec_list <- lapply(
+        1:(file1_index - 1),
+        function(file2_index) {
+          file2_name <- network_file_list[[file2_index]]
+          ds2 <- as.matrix(data.table::fread(file2_name))
+          ds2 <- ds2[, -1]
+          colnames(ds2) <- paste0(colnames(ds2),"_",
+                                  sub(".*/", "", file2_name))
+          return(Matrix::Matrix(0,
+                                nrow = ncol(ds1),
+                                ncol = ncol(ds2),
+                                dimnames = list(colnames(ds1), colnames(ds2))
+          ))
+        })
+      empty_section <- do.call(cbind, empty_sec_list)
 
-    ## Create empty section
-    empty_sec_list <- lapply(1:(file1_index - 1), function(file2_index) {
-      file2_name <- network_file_list[[file2_index]]
-      ds2 <- as.matrix(data.table::fread(file2_name))
-      ds2 <- ds2[, -1]
-      colnames(ds2) <- paste0(colnames(ds2),"_",sub(".*/", "", file2_name))
-      return(Matrix::Matrix(0,
-        nrow = ncol(ds1), ncol = ncol(ds2),
-        dimnames = list(colnames(ds1), colnames(ds2))
-      ))
+      return(cbind(empty_section, nonempty_section))
     })
-    empty_section <- do.call(cbind, empty_sec_list)
-
-    return(cbind(empty_section, nonempty_section))
-  })
 
   ## Combine list of row matrices into one large matrix
   rbh_mat <- do.call(rbind, adj_rows_list)
@@ -373,14 +444,16 @@ construct_meta_rbh <- function(network_file_list = list(),
 #' cluster/community number that each metagene is associated with, renamed so
 #' that the clusters are in order of size (1 being the largest)
 #' @param rbh_mat adjacency/reciprocal best hits matrix, as output by
-#' \code{\link[consensusNet]{construct_meta_rbh}}
+#' [construct_meta_rbh()]
+#' @param expansion expansion parameter
 #'
-#' @return The output of \code{\link[MCL]{mcl}}, renamed so that the clusters
+#' @return The output of [MCL::mcl()], renamed so that the clusters
 #' are in order of size (1 being the largest)
 #' @export
 #'
 #' @examples
-#' network_file_dir <- system.file("extdata", package = "consensusNet")
+#' \dontrun{
+#' network_file_dir <- system.file("extdata", package = "consensusNetR")
 #' network_file_list <- list.files(network_file_dir, full.names = TRUE)
 #' ma <- construct_meta_rbh(
 #'   network_file_list = network_file_list,
@@ -388,17 +461,23 @@ construct_meta_rbh <- function(network_file_list = list(),
 #'   lower_quant = .05, max_rank = 2
 #' )
 #' comms <- detect_metagene_communities(ma)
-detect_metagene_communities <- function(rbh_mat, expansion = 2) {
+#' }
+detect_metagene_communities <- function(rbh_mat,
+                                        expansion = 2) {
 
-  comms <- MCL::mcl(rbh_mat, addLoops = TRUE, allow1 = F, expansion = expansion)
-  
-  if (length(grep('Error', rbh_mat)) > 0){
-    stop('Error: rbh_mat could not be transformed into an equilibrium state matrix. Set expansion parameter to a higher value than 2.')
+  comms <- MCL::mcl(rbh_mat,
+                    addLoops = TRUE,
+                    allow1 = FALSE,
+                    expansion = expansion)
+
+  if (length(grep('Error', rbh_mat)) > 0) {
+    stop('rbh_mat could not be transformed into an equilibrium state matrix. Set expansion parameter to a higher value than 2.')
   }
-  
+
   cat("Clusters detected\n")
   mapping_list <- as.list(seq_len(length(unique(comms$Cluster))))
-  names(mapping_list) <- names(sort(table(comms$Cluster), decreasing = TRUE))
+  names(mapping_list) <- names(sort(table(comms$Cluster),
+                                    decreasing = TRUE))
 
   comms$Cluster <- as.vector(unlist(mapping_list[as.character(comms$Cluster)]))
   return(comms)
@@ -428,7 +507,8 @@ detect_metagene_communities <- function(rbh_mat, expansion = 2) {
 #' @export
 #'
 #' @examples
-#' network_file_dir <- system.file("extdata", package = "consensusNet")
+#' \dontrun{
+#' network_file_dir <- system.file("extdata", package = "consensusNetR")
 #' network_file_list <- list.files(network_file_dir, full.names = TRUE)
 #' ma <- construct_meta_rbh(
 #'   network_file_list = network_file_list,
@@ -439,10 +519,13 @@ detect_metagene_communities <- function(rbh_mat, expansion = 2) {
 #' consensus <- get_gene_community_membership(comms, 2,
 #'   network_file_dir = network_file_dir
 #' )
+#' }
 get_gene_community_membership <- function(comms, min_studies,
                                           network_file_list = list(),
                                           network_file_dir = NULL,
-                                          include_nonmembers = FALSE, compress = T,rank_based = T) {
+                                          include_nonmembers = FALSE,
+                                          compress = TRUE,
+                                          rank_based = TRUE) {
   if ((length(network_file_list) == 0 & is.null(network_file_dir))) {
     stop("get_gene_community_membership requires either a network_file_list or a
          network_file_dir, or both")
@@ -464,8 +547,8 @@ get_gene_community_membership <- function(comms, min_studies,
   gene_cluster_map <- get_gene_map_per_dataset(
     comms, n_metagenes,
     network_file_list,
-    compress = T,
-    rank_based = T
+    compress = TRUE,
+    rank_based = TRUE
   )
   cat("Gene cluster map completed\n")
   return(get_consensus_mem_from_votes(gene_cluster_map, min_studies,
@@ -479,8 +562,8 @@ get_consensus_mem_from_votes <- function(gene_cluster_votes, min_studies,
     gene_id <- row.names(gene_cluster_votes)[row_num]
     counts <- table(gene_cluster_votes[row_num, ])
     clusters <- paste(names(counts)[which(counts == max(counts) &
-      counts >= min_studies)],
-    collapse = ";"
+                                            counts >= min_studies)],
+                      collapse = ";"
     )
     n_studies <- max(counts)
     if (nchar(clusters) == 0 & !include_nonmembers) {
@@ -496,7 +579,8 @@ get_consensus_mem_from_votes <- function(gene_cluster_votes, min_studies,
 
 get_gene_map_per_dataset <- function(community, n_metagenes,
                                      network_file_list = list(),
-                                     network_file_dir = NULL, compress = T,rank_based = T) {
+                                     network_file_dir = NULL, compress = TRUE,
+                                     rank_based = TRUE) {
   ## Takes the output of MCL::mcl
   if ((length(network_file_list) == 0 & is.null(network_file_dir))) {
     stop("get_gene_map_per_dataset requires either a network_file_list or a
@@ -540,7 +624,7 @@ get_gene_map_per_dataset <- function(community, n_metagenes,
     network <- as.matrix(data.table::fread(network_file_list[[i]]))
     row.names(network) <- network[, 1]
     network <- network[, -1]
-    if(compress) #this works under assumption that the first unique metagene is the one to keep.
+    if (compress) #this works under assumption that the first unique metagene is the one to keep.
     {
       keep_inds <- !duplicated(loc_comm)
       loc_comm  <- loc_comm[keep_inds]
@@ -548,9 +632,9 @@ get_gene_map_per_dataset <- function(community, n_metagenes,
     }
     # For each gene in the i-th network, find the cluster with the highest
     # loading for that gene
-    if(rank_based){network <- -apply(-network,2,rank)} #MIKE you are here
+    if (rank_based) {network <- -apply(-network,2,rank)}
     mod <- apply(network, 1, function(x) {
-      which(x == max(x, na.rm = T))[1]
+      which(x == max(x, na.rm = TRUE))[1]
     })
     # For each module in the i-th network, find that module's cluster
     # (these are located in loc_comm) and assign that cluster as the label
@@ -567,43 +651,44 @@ get_gene_map_per_dataset <- function(community, n_metagenes,
 }
 
 
-compressMetaGenes <- function(y,method = "none",w=NULL, dynamic_thresh = .65)
-{
-  if(is.null(w)){
-    ret <- apply(y,1,mean,na.rm = T);
-  }else if(length(w) ==1 & w == "Dynamic"){
-    weights <- apply(y,2,function(x){ x <- sort(x,decreasing = T); return(mean(x[1:5]))})
-    print(weights)
-    
+compressMetaGenes <- function(y,method = "none",
+                              w=NULL,
+                              dynamic_thresh = .65){
+  if (is.null(w)) {
+    ret <- apply(y,1,mean,na.rm = TRUE);
+  } else if (length(w) == 1 & w == "Dynamic") {
+    weights <- apply(y,2,function(x){
+      x <- sort(x,decreasing = TRUE)
+      return(mean(x[1:5]))
+    })
+    message(weights)
+
     weights <- weights - dynamic_thresh
     weights[weights < 0 | is.na(weights)] <- 0
-    
-    print(weights)
-    ret     <- apply(y,1,weighted.mean,w=weights,na.rm=T)
+
+    message(weights)
+    ret     <- apply(y, 1, stats::weighted.mean,
+                     w = weights, na.rm = TRUE)
   }else {
-    ret <- apply(y,1,weighted.mean,w=w,na.rm=T)
+    ret <- apply(y, 1, stats::weighted.mean,
+                 w = w, na.rm = TRUE)
   }
-  
-  ret[is.na(ret)] <- mean(ret,na.rm = T)
+
+  ret[is.na(ret)] <- mean(ret,na.rm = TRUE)
   return(ret)
 }
 
 #' Compute the average metagene across studies for each community
 #'
-#' @param consensus communities output from MCL::mcl, a list containing element
+#' @param consensus communities output from [MCL::mcl()], a list containing element
 #' $Cluster with a vector of the cluster associated with each index.
-#' @param rbh matrix indicating edges of recipracol best hit network
-#' @param network_file_list a list of paths to files which can be read by
-#' data.table::fread. These constitute the metagene datasets. Each file should
-#' have some sort of common gene_id as the first column
-#' @param network_file_dir a directory in which all files are relevant to the
-#' meta reciprocal best hits, all readable by fread. These will be added to the
-#' file list. Each file should have some sort of common gene_id as the first
-#' column.
+#' @param network_membership_list a list containing community membership scores for each
+#' network. Where rownames contain unique gene ids and column names are community names
 #' @param weights weights for weighted average of based on study attributes,
 #' not yet implemented
-#' @param compressIntra indicates how to deal with multiple metagenes beloning
-#' to the same comminity within one study-level network
+#' @param gene_cohort_N gene_cohort_N
+#' @param compressIntra indicates how to deal with multiple metagenes belonging
+#' to the same community within one study-level network
 #'
 #' @return matrix with average loadings (metagenes) across studies included from
 #' network_file_list
@@ -622,7 +707,7 @@ compressMetaGenes <- function(y,method = "none",w=NULL, dynamic_thresh = .65)
 #' compute_mean_meta_genes(comms,ma,network_file_list = network_file_list)
 #' }
 compute_mean_meta_genes <- function(consensus,
-                                    network_membership_list, 
+                                    network_membership_list,
                                     weights = NULL,
                                     gene_cohort_N = 3,
                                     compressIntra = "first")
@@ -631,15 +716,15 @@ compute_mean_meta_genes <- function(consensus,
   n_metagenes <- lapply(network_membership_list, ncol)
   u_genes     <-  table(unlist(lapply(network_membership_list, rownames)))
   u_genes     <- sort(names(u_genes[u_genes >= gene_cohort_N]))
-  
+
   # collect gene loadings to compute average gene loadings (actually kme's) across each dataset
   clusterLoadings   <- list()
-  
+
   for (c in as.character(sort(unique(consensus$Cluster)))) {
     clusterLoadings[[c]] <- matrix(NA,length(u_genes),
                                    length(network_membership_list))
   }
-  
+
   start <- 0
   stop  <- 0
   for (i in seq_len(length(network_membership_list)))
@@ -647,11 +732,11 @@ compute_mean_meta_genes <- function(consensus,
     start    <- stop + 1
     stop     <- start + n_metagenes[[i]] - 1
     loc_comm <- consensus$Cluster[start:stop]
-    
+
     cat(paste("loading", names(network_membership_list)[i], "\n"))
     network <- as.matrix(network_membership_list[[i]])
     mods    <- consensus$Cluster[start:stop]
-    
+
     for (c in as.character(sort(unique(mods))))
     {
       mod_cnt <- sum(mods == c)
@@ -669,14 +754,15 @@ compute_mean_meta_genes <- function(consensus,
       {
         x <- network[,mods == c];
       }
-      
-      clusterLoadings[[as.character(c)]][,i] <- x[match(u_genes,rownames(network))]
+
+      clusterLoadings[[as.character(c)]][,i] <- x[match(u_genes,
+                                                        rownames(network))]
     }
   }
-  
+
   meanGeneLoadings <- t(plyr::laply(clusterLoadings,
                                     .fun = compressMetaGenes,
-                                    method = "none", w=weights))
+                                    method = "none", w = weights))
   rownames(meanGeneLoadings) <- u_genes
   colnames(meanGeneLoadings) <- names(clusterLoadings)
   return(meanGeneLoadings)
@@ -695,27 +781,32 @@ compute_mean_meta_genes <- function(consensus,
 #' be associated with one module.
 #' @export
 #'
-find_unique_top_genes <- function(mGenes, K=10,max_iter=10)
+find_unique_top_genes <- function(mGenes, K=10,
+                                  max_iter=10)
 {
-  converged <- F
+  converged <- FALSE
   it        <- 1
-  while(it <= max_iter & !converged)
+  while (it <= max_iter & !converged)
   {
     metaGeneRanks   <- t(plyr::aaply(-mGenes,2,rank))
     multiMembInd    <- apply(metaGeneRanks <= K,1,sum) >  1
     nFound <- sum(apply(metaGeneRanks <= K, 1,any) & !multiMembInd)
-    print(paste(nFound,"unique genes found with",sum(multiMembInd),"non-unique" ))
-    if(sum(multiMembInd) == 0){converged <- T}
+    message(nFound,"unique genes found with",
+            sum(multiMembInd),"non-unique")
+    if (sum(multiMembInd) == 0) {converged <- TRUE}
     mGenes <- mGenes[!multiMembInd,]
-    it <- it+1
+    it <- it + 1
   }
   metaGeneRanks     <- t(plyr::aaply(-mGenes,2,rank))
-  members           <- plyr::ldply(plyr::alply(metaGeneRanks <= K, 2, which),names)
+  members           <- plyr::ldply(plyr::alply(metaGeneRanks <= K, 2, which),
+                                   names)
   rownames(members) <- members[,1]
   members           <- as.data.frame(t(members[,-1]))
   temp              <- tidyr::gather(members)
-  ret               <- ddply(temp, .variables = "value",.fun = function(x){paste(sort(x$key),collapse=";")})
-  ret <- data.frame(key = ret[,2], value=ret[,1])
+  ret               <- plyr::ddply(temp, .variables = "value",
+                                   .fun = function(x){paste(sort(x$key),
+                                                            collapse = ";")})
+  ret <- data.frame(key = ret[,2], value = ret[,1])
   ret <- ret[order(ret$key),]
   return(ret)
 }
