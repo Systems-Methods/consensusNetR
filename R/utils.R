@@ -54,6 +54,40 @@ compare_networks <- function(net_memb_1,
   return(data.frame(adjRand, cor_of_cor, cor_coph))
 }
 
+####
+
+# utility function for computing cor of cor between study expression data
+# takes list of expression datasets in as input
+calc_cor_of_cor <- function(ex_list){
+  genes <- rownames(ex_list[[1]]); for(i in 2:length(ex_list)){ genes <- genes[genes %in% rownames(ex_list[[i]])] }
+  doMC::registerDoMC(parallel::detectCores())
+  
+  cor_mat <- plyr::llply(ex_list, .fun = function(ex){
+    temp  <- as.matrix(ex)
+    t_ex  <- temp[intersect(genes,rownames(temp)),]; rm(temp); gc()
+    ret   <- as.vector(as.dist(Rfast::cora(t(t_ex)))); rm(t_ex); gc() # Rfast is your friend
+    return(ret) 
+  }, .parallel = T) 
+  rm(ex_list); gc()
+  cor_mat <- do.call(cbind, cor_mat)
+  
+  message('Converting correlations to Z scores...')
+  cor_mat     <- DescTools::FisherZ(cor_mat) # transform correlations in to z space in order to compute correlation bewteen datasets.
+  
+  remove_indices     <- apply(cor_mat, 2, function(i) which(is.na(i)))
+  remove_indices_inf <- apply(cor_mat, 2, function(i) which(is.infinite(i)))
+  remove_indices     <- unique(c(unlist(remove_indices), unlist(remove_indices_inf)))
+  if (length(remove_indices) > 0){ cor_mat <- cor_mat[-remove_indices,] }
+  
+  cor_of_cors            <- cor(cor_mat, use="pairwise.complete.obs")
+  colnames(cor_of_cors)  <- colnames(cor_mat)
+  row.names(cor_of_cors) <- colnames(cor_mat)
+  rm(cor_mat); gc()
+  
+  return(cor_of_cors)
+}
+
+
 
 
 #' Compute RBH (reciprocal best hits) for Two Networks based on Overlap of top genes
