@@ -8,6 +8,8 @@ calc_cor_of_cor <- function(ex_list){
   genes <- rownames(ex_list[[1]]); for(i in 2:length(ex_list)){ genes <- genes[genes %in% rownames(ex_list[[i]])] }
   doMC::registerDoMC(parallel::detectCores())
   
+  message('Computing intra-study correlations...')
+  
   cor_mat <- plyr::llply(ex_list, .fun = function(ex){
     temp  <- as.matrix(ex)
     t_ex  <- temp[intersect(genes,rownames(temp)),]; rm(temp); gc()
