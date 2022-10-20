@@ -80,9 +80,15 @@ compare_networks <- function(net_memb_1,
   net_memb_2 <- fisherZ(net_memb_2)
   dist_1     <- stats::as.dist(Rfast::cora(t(net_memb_1)))
   dist_2     <- stats::as.dist(Rfast::cora(t(net_memb_2)))
-  cor_of_cor <- stats::cor(fisherZ(unlist(dist_1)), fisherZ(unlist(dist_2)))
+  cor_mat    <- cbind(fisherZ(unlist(dist_1)), fisherZ(unlist(dist_2)))
+  
+  remove_indices     <- apply(cor_mat, 2, function(i) which(is.na(i)))
+  remove_indices_inf <- apply(cor_mat, 2, function(i) which(is.infinite(i)))
+  remove_indices     <- unique(c(unlist(remove_indices), unlist(remove_indices_inf)))
+  if (length(remove_indices) > 0){ cor_mat <- cor_mat[-remove_indices,] }
+  
+  cor_of_cor <- stats::cor(cor_mat[,1], cor_mat[,2],use = "pairwise")
 
-  # na_inds    <- is.na(comms_1) | is.na(comms_2)
   dend_1     <- stats::hclust(1 - dist_1)
   dend_2     <- stats::hclust(1 - dist_2)
   cor_coph   <- dendextend::cor_cophenetic(dend_1, dend_2)
@@ -282,7 +288,7 @@ compute_2study_rbh_Correlation_Based <- function(meta_g1, meta_g2, lower_quant =
 #' indicating stronger membership in a community
 #' @param memb_cut membership threshold for stricter thresholding. Only genes with
 #' membership score greater the threshold are used
-construct_mulit_rbh_overlap_based <- function(network_membership_list,
+construct_multi_rbh_overlap_based <- function(network_membership_list,
                                               top_n = 50,
                                               memb_cut = 0) {
   metaStudies <- names(network_membership_list)
@@ -331,6 +337,19 @@ construct_mulit_rbh_overlap_based <- function(network_membership_list,
 
   rbh          <- rbh + t(rbh) # contains overlap counts for reciprical best hits
   return(rbh)
+}
+
+#### 
+plot_rbh <- function(rbh,memb_list, anns, file_name = NA,w=10,h=8){
+  ns            <- sapply(memb_list, ncol)
+  gaps          <- sapply(1:length(ns),function(i){sum(ns[1:i])})
+  #anns          <- data.frame(Cohorts = gsub("_m.*$","",rownames(rbh))); rownames(anns) <- rownames(rbh)
+  pheatmap::pheatmap(rbh, cluster_rows = F, cluster_cols = F, 
+                     gaps_row = gaps, gaps_col = gaps,
+                     show_rownames = F, show_colnames = F, 
+                     annotation_row = anns,
+                     annotation_col = anns,
+                     color=colorRampPalette(c("lightgrey","blue","navy"))(50), filename = file_name , width = w, height = h)
 }
 
 
