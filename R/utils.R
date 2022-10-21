@@ -72,8 +72,8 @@ compare_networks <- function(net_memb_1,
 
   comms_1    <- comms_1[inds]
   comms_2    <- comms_2[inds]
-  net_memb_1 <- net_memb_1[inds,]
-  net_memb_2 <- net_memb_2[inds,]
+  net_memb_1 <- net_memb_1[inds,]; net_memb_1[net_memb_1 == 1] <- .99; net_memb_1[net_memb_1 == -1] <- -.99;
+  net_memb_2 <- net_memb_2[inds,]; net_memb_2[net_memb_2 == 1] <- .99; net_memb_2[net_memb_2 == -1] <- -.99;
   adjRand    <- mclust::adjustedRandIndex(comms_1,comms_2)
 
   net_memb_1 <- fisherZ(net_memb_1)
