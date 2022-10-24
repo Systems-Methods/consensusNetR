@@ -39,14 +39,16 @@ calc_cor_of_cor <- function(ex_list){
 
 compare_networks <- function(net_memb_1,
                              net_memb_2,
-                             K= 75,
+                             K = 75,
                              memb_cut = 0.5,
                              na_flag = "none") {
-  K_1 <- min(ncol(net_memb_1), K)
-  K_2 <- min(ncol(net_memb_2), K)
+  K_1        <- min(ncol(net_memb_1), K)
+  K_2        <- min(ncol(net_memb_2), K)
   net_memb_1 <- net_memb_1[rownames(net_memb_1) %in% rownames(net_memb_2),1:K_1]
   net_memb_2 <- net_memb_2[match(rownames(net_memb_1), rownames(net_memb_2)),1:K_2]
-
+  rbh        <- compute_2Network_RBH_Overlap_Based(net_memb_1, net_memb_2) 
+  overlap    <- sum(rbh > 0)
+  
   comms_1    <- apply(net_memb_1, 1,
                       function(x){
                         x[x < memb_cut] <- 0
@@ -92,7 +94,8 @@ compare_networks <- function(net_memb_1,
   dend_1     <- stats::hclust(1 - dist_1)
   dend_2     <- stats::hclust(1 - dist_2)
   cor_coph   <- dendextend::cor_cophenetic(dend_1, dend_2)
-  return(data.frame(adjRand, cor_of_cor, cor_coph))
+  
+  return(data.frame(adjRand, cor_of_cor, cor_coph, overlap))
 }
 
 
