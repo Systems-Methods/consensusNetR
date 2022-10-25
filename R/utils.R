@@ -99,8 +99,6 @@ compare_networks <- function(net_memb_1,
 }
 
 
-
-
 #' Compute RBH (reciprocal best hits) for Two Networks based on Overlap of top genes
 #'
 #' Compute RBH (reciprocal best hits) for Two Networks based on Overlap of top
