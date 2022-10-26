@@ -870,11 +870,47 @@ find_unique_top_genes <- function(mGenes, K=10,
 
 ##########
 # quantile normalize of each communities eigen genes based on a target network
-
-comms <- names(eigen_list[[1]])
-qnormed_list <- list()
-for(i in 1:ncol(eigen_list[[1]])){
-  t_list   <- llply(eigen_list, function(x){return(x[,i])})
-  q_normed <- normalizeQuantileRank(t_list, xTarget = sort(t_list[[1]])) # quantile normalize with tcga as the target distribution since it it the largest cohort
-  qnormed_list[[comms[i]]] <- unlist(q_normed)
+normalize_eigengenes <- function(eigen_list, target_study_index=1){
+  comms        <- rownames(eigen_list[[target_study_index]])
+  qnormed_list <- list()
+  for(i in 1:nrow(eigen_list[[target_study_index]])){
+    t_list   <- plyr::llply(eigen_list, function(x){return(x[i,])})
+    q_normed <- aroma.light::normalizeQuantileRank(t_list, xTarget = sort(t_list[[1]])) 
+    qnormed_list[[comms[i]]] <- q_normed
+  }
+  return(qnormed_list)
 }
+
+
+########
+# plot individual eigengene distributions 
+plot_consensus_eig_dist <-  function(eigen_list, target_study_index=1, fileName= NULL)
+{
+  print(sum(sapply(eigen_list, ncol)))
+  qnormed_list   <- lapply(normalize_eigengenes(eigen_list = eigen_list, target_study_index = target_study_index),unlist)
+  print(length(unlist(qnormed_list[[1]])))
+  
+  sample_names   <- colnames(eigen_list[[1]]); for(i in 2:length(eigen_list)){sample_names <- c(sample_names, colnames(eigen_list[[i]]))} # not sure why this is the case but naming temp's row to 1:n doesn't work
+  qnormed_df     <- as.data.frame(qnormed_list); rownames(qnormed_df) <- sample_names
+  
+  # Plots for eigengene distributions 
+  temp_eigen           <- as.data.frame(t(eigen_full))
+  temp_eigen$Community <- factor(rownames(temp_eigen), levels =rownames(temp_eigen))
+  temp_eigen           <- tidyr::pivot_longer(data = temp_eigen,names_to = "sample",cols = rownames(eigen_full))
+  
+  eigen_dens_plots     <- ggplot(temp_eigen, aes(x=value,color=Community, fill=Community)) + geom_density(alpha=0.8) + facet_wrap(~Community,scales = "free") +  
+    hrbrthemes::theme_ipsum() +
+    ylab("") + xlab("") + theme(
+      legend.position="none", 
+      panel.spacing = unit(0.1, "lines"),
+      strip.text.x = element_text(size = 12),axis.text.x = element_blank(),axis.text.y  = element_blank())
+  
+  ggsave(fileName,eigen_dens_plots, height = 10, width = 12, dpi = 1000)
+}
+
+
+
+
+
+
+
