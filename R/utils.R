@@ -868,4 +868,13 @@ find_unique_top_genes <- function(mGenes, K=10,
   return(ret)
 }
 
+##########
+# quantile normalize of each communities eigen genes based on a target network
 
+comms <- names(eigen_list[[1]])
+qnormed_list <- list()
+for(i in 1:ncol(eigen_list[[1]])){
+  t_list   <- llply(eigen_list, function(x){return(x[,i])})
+  q_normed <- normalizeQuantileRank(t_list, xTarget = sort(t_list[[1]])) # quantile normalize with tcga as the target distribution since it it the largest cohort
+  qnormed_list[[comms[i]]] <- unlist(q_normed)
+}
