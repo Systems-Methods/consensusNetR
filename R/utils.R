@@ -875,7 +875,7 @@ normalize_eigengenes <- function(eigen_list, target_study_index=1){
   qnormed_list <- list()
   for(i in 1:nrow(eigen_list[[target_study_index]])){
     t_list   <- plyr::llply(eigen_list, function(x){return(x[i,])})
-    q_normed <- aroma.light::normalizeQuantileRank(t_list, xTarget = sort(t_list[[1]])) 
+    q_normed <- aroma.light::normalizeQuantileRank(t_list, xTarget = sort(t_list[[target_study_index]])) 
     qnormed_list[[comms[i]]] <- q_normed
   }
   return(qnormed_list)
@@ -886,18 +886,16 @@ normalize_eigengenes <- function(eigen_list, target_study_index=1){
 # plot individual eigengene distributions 
 plot_consensus_eig_dist <-  function(eigen_list, target_study_index=1, fileName= NULL)
 {
-  print(sum(sapply(eigen_list, ncol)))
   qnormed_list   <- lapply(normalize_eigengenes(eigen_list = eigen_list, target_study_index = target_study_index),unlist)
-  print(length(unlist(qnormed_list[[1]])))
-  
-  sample_names   <- colnames(eigen_list[[1]]); for(i in 2:length(eigen_list)){sample_names <- c(sample_names, colnames(eigen_list[[i]]))} # not sure why this is the case but naming temp's row to 1:n doesn't work
-  qnormed_df     <- as.data.frame(qnormed_list); rownames(qnormed_df) <- sample_names
-  
+  temp           <- as.data.frame(qnormed_list); rm(qnormed_list)
+
   # Plots for eigengene distributions 
-  temp_eigen           <- as.data.frame(t(eigen_full))
+  temp_eigen           <- as.data.frame(t(temp));  rm(temp); gc()
   temp_eigen$Community <- factor(rownames(temp_eigen), levels =rownames(temp_eigen))
-  temp_eigen           <- tidyr::pivot_longer(data = temp_eigen,names_to = "sample",cols = rownames(eigen_full))
+  temp_eigen           <- tidyr::pivot_longer(data = temp_eigen,names_to = "sample",cols = colnames(temp_eigen)[-ncol(temp_eigen)])
   
+  require(ggplot2)
+  require(hrbrthemes)
   eigen_dens_plots     <- ggplot(temp_eigen, aes(x=value,color=Community, fill=Community)) + geom_density(alpha=0.8) + facet_wrap(~Community,scales = "free") +  
     hrbrthemes::theme_ipsum() +
     ylab("") + xlab("") + theme(
