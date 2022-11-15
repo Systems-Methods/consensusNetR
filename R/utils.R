@@ -429,6 +429,7 @@ construct_meta_rbh <- function(network_file_list = list(),
       ds1 <- ds1[, -1]
       colnames(ds1) <- paste0(colnames(ds1),"_",
                               sub(".*/", "", file1_name))
+      ds1 <- apply(ds1, c(1,2), as.numeric)
 
       ## For each dataset, including ds1, onward in the network_file_list, compute
       ## the 2 study network
@@ -441,6 +442,7 @@ construct_meta_rbh <- function(network_file_list = list(),
           ds2 <- ds2[, -1]
           colnames(ds2) <- paste0(colnames(ds2),"_",
                                   sub(".*/", "", file2_name))
+          ds2 <- apply(ds2, c(1,2), as.numeric)
           return(compute_2study_rbh_Correlation_Based(
             ds1, ds2, lower_quant, upper_quant,
             max_rank, abs, sparse, method
