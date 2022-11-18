@@ -396,6 +396,8 @@ plot_rbh <- function(rbh,memb_list, anns, file_name = NA,w=10,h=8){
 #' ma <- construct_meta_rbh( network_file_list = network_file_list,
 #'   upper_quant = .99, lower_quant = .05, max_rank = 2)
 #'   }
+# Mike/Jimmy, this function needs to become a wrapper function that calls (construct_multi_rbh_overlap_based or construct_multi_rbh_overlap_based based on some flag
+# with options "overlap", "pearson" and "spearman" with "overlap" as default. And we need to move away from file lists and just use lists of membership matrices)
 construct_meta_rbh <- function(network_file_list = list(),
                                network_file_dir = NULL, lower_quant = 0,
                                upper_quant = 1.0, max_rank = 1,
@@ -708,7 +710,6 @@ get_gene_map_per_dataset <- function(community, n_metagenes,
 
   return(ents_clusts)
 }
-
 
 compressMetaGenes <- function(y,method = "none",
                               w=NULL,
