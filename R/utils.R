@@ -12,7 +12,7 @@ calc_cor_of_cor <- function(ex_list){
   
   cor_mat <- plyr::llply(ex_list, .fun = function(ex){
     temp  <- as.matrix(ex)
-as    ret   <- as.vector(as.dist(Rfast::cora(t(t_ex)))); rm(t_ex); gc() # Rfast is your friend
+    ret   <- as.vector(as.dist(Rfast::cora(t(t_ex)))); rm(t_ex); gc() # Rfast is your friend
     return(ret) 
   }, .parallel = T) 
   rm(ex_list); gc()
