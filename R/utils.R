@@ -164,7 +164,7 @@ compute_2Network_RBH_Overlap_Based <- function(meta_g1,
 
 
 
-#' Compute RBH for Two Metagene Datasets
+#' Compute correlation based RBH for Two Metagene Datasets
 #'
 #' Computes a single network with two datasets. They must have rownames
 #' containing some sort of common geneID vocabulary, so that they can
@@ -352,13 +352,8 @@ construct_multi_rbh_overlap_based <- function(network_membership_list,
 #' with the unique file names, such that the dimension names are guaranteed to
 #' be unique.
 #'
-#' @param network_file_list a list of paths to files which can be read by
-#' data.table::fread. These constitute the metagene datasets. Each file should
-#' have some sort of common gene_id as the first column
-#' @param network_file_dir a directory in which all files are relevant to the
-#' meta reciprocal best hits, all readable by fread. These will be added to the
-#' file list. Each file should have some sort of common gene_id as the first
-#' column.
+#' @param network_membership_list a list containing community membership scores for each
+#' network. Where rownames contain unique gene ids and column names are commuity names
 #' @param lower_quant indicates the quantile for the minimum correlation
 #' for the reciprocal best hits we will find.
 #' @param upper_quant indicates the quantile for correlations above which
@@ -443,7 +438,7 @@ construct_multi_rbh_correlation_based <- function(network_membership_list,
 }
 
 
-# Mike/Jimmy, add a wrapper function that calls (construct_multi_rbh_overlap_based or construct_multi_rbh_correlation_based with some flag
+# Wrapper function that calls (construct_multi_rbh_overlap_based or construct_multi_rbh_correlation_based with some flag
 # with options "overlap", "pearson" and "spearman" with "overlap" as default. And we need to move away from file lists and just use lists of membership matrices)
 construct_multi_study_rbh <- function(network_membership_list, method = "overlap",...){
   
