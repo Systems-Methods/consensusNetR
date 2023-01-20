@@ -117,6 +117,7 @@ compare_networks <- function(net_memb_1,
 #' hit, and 0 indicating that they are not.
 #' @export
 #'
+#'
 compute_2Network_RBH_Overlap_Based <- function(meta_g1,
                                                meta_g2,
                                                top_n = 50,
@@ -204,9 +205,10 @@ compute_2Network_RBH_Overlap_Based <- function(meta_g1,
 #' ))
 #' rbh <- compute_2study_rbh_Correlation_Based(ds1, ds2)
 #' }
+#' 
 compute_2study_rbh_Correlation_Based <- function(meta_g1, meta_g2, lower_quant = 0,
                                                  upper_quant = 1.0, max_rank = 1,
-                                                 abs = FALSE, sparse = TRUE, method = "pearson") {
+                                                 abs = FALSE, sparse = FALSE, method = "pearson") {
 
   # Filter for rows with common gene names
   meta_g1 <- stats::na.omit(meta_g1)
@@ -268,11 +270,11 @@ compute_2study_rbh_Correlation_Based <- function(meta_g1, meta_g2, lower_quant =
                                   dimnames(meta_g2)[[2]]
                                 )
   )
-  return(rbh_network)
+  return(as.matrix(rbh_network))
 }
 
-######## Construct Multi Network Overlap Bases RBH Matrix
-#' Construct Meta Reciprocal Best Hits bases on overlaps
+######## Construct Multi Network Overlap Based RBH Matrix
+#' Construct Meta Reciprocal Best Hits based on overlaps
 #'
 #' Iterate through a list containing membership matrices and construct pairwise
 #' networks for every combination, and output them as a symmetric matrix with
@@ -339,23 +341,10 @@ construct_multi_rbh_overlap_based <- function(network_membership_list,
   return(rbh)
 }
 
-#### 
-plot_rbh <- function(rbh,memb_list, anns, file_name = NA,w=10,h=8){
-  ns            <- sapply(memb_list, ncol)
-  gaps          <- sapply(1:length(ns),function(i){sum(ns[1:i])})
-  #anns          <- data.frame(Cohorts = gsub("_m.*$","",rownames(rbh))); rownames(anns) <- rownames(rbh)
-  pheatmap::pheatmap(rbh, cluster_rows = F, cluster_cols = F, 
-                     gaps_row = gaps, gaps_col = gaps,
-                     show_rownames = F, show_colnames = F, 
-                     annotation_row = anns,
-                     annotation_col = anns,
-                     color=colorRampPalette(c("lightgrey","blue","navy"))(50), filename = file_name , width = w, height = h)
-}
-
-
-#' Construct Meta Reciprocal Best Hits
+######## Construct Multi Network Correlation Based RBH Matrix
+#' Construct Meta Reciprocal Best Hits based on correlations
 #'
-#' Iterate through a list of files (readable by fread) and construct pairwise
+#' Iterate through a list of membership matrices and construct pairwise
 #' networks for every combination, and output them as a symmetric matrix with
 #' labeled dimensions. This can be interpreted as an "adjacency" matrix between
 #' all of the different metagenes across all the datasets in the file list. The
@@ -395,108 +384,91 @@ plot_rbh <- function(rbh,memb_list, anns, file_name = NA,w=10,h=8){
 #' ma <- construct_meta_rbh( network_file_list = network_file_list,
 #'   upper_quant = .99, lower_quant = .05, max_rank = 2)
 #'   }
-# Mike/Jimmy, this function needs to become a wrapper function that calls (construct_multi_rbh_overlap_based or construct_multi_rbh_overlap_based based on some flag
-# with options "overlap", "pearson" and "spearman" with "overlap" as default. And we need to move away from file lists and just use lists of membership matrices)
-construct_meta_rbh <- function(network_file_list = list(),
-                               network_file_dir = NULL, lower_quant = 0,
-                               upper_quant = 1.0, max_rank = 1,
-                               abs = FALSE, sparse = TRUE, method = "pearson",
-                               binary = FALSE) {
-
-  ## FileList with full names or directory containing only relevant files
-  if ((length(network_file_list) == 0 & is.null(network_file_dir))) {
-    stop("construct_meta_rbh requires either a network_file_list or a
-         network_file_dir, or both")
+#'   
+construct_multi_rbh_correlation_based <- function(network_membership_list,
+                                                  lower_quant = 0,
+                                                  upper_quant = 1.0, max_rank = 1,
+                                                  abs = FALSE, sparse = FALSE, method = "pearson",
+                                                  binary = FALSE) {
+  metaStudies <- names(network_membership_list)
+  ns          <- sapply(network_membership_list, ncol)
+  N           <- sum(ns)
+  comms       <- unlist(sapply(names(network_membership_list),
+                               function(x){
+                                 paste0(x,"_",
+                                        colnames(network_membership_list[[x]]))}))
+  rbh           <- matrix(0, N,N)
+  colnames(rbh) <- comms
+  rownames(rbh) <- comms;
+  
+  rbh_metrics <- matrix(NA, choose(length(network_membership_list),2), 5);
+  cnt         <- 1
+  
+  for (i in 1:(length(network_membership_list) - 1))
+  {
+    for (j in (i + 1):length(network_membership_list))
+    {
+      rowStart <- sum(ns[(1:i) - 1]) + 1
+      rowStop  <- rowStart + ns[i] - 1
+      colStart <- sum(ns[(1:j) - 1]) + 1
+      colStop  <- colStart + ns[j] - 1
+      
+      tempRBH  <- compute_2study_rbh_Correlation_Based(
+        meta_g1     = network_membership_list[[i]],
+        meta_g2     = network_membership_list[[j]], 
+        lower_quant = lower_quant,
+        upper_quant = upper_quant, 
+        max_rank    = max_rank,
+        abs         = abs, 
+        sparse      = sparse, 
+        method      = method)
+      
+      rbh[rowStart:rowStop, colStart:colStop] <- tempRBH
+      message(metaStudies[i],": ",
+              ncol(network_membership_list[[i]]),
+              " coms, ", metaStudies[j],": ",
+              ncol(network_membership_list[[j]]), " coms, RBH: ",
+              sum(apply(tempRBH > 0,1,sum))," coms")
+      rbh_metrics[cnt, ] <- c(metaStudies[i],
+                              metaStudies[i],
+                              ncol(network_membership_list[[i]]),
+                              ncol(network_membership_list[[j]]),
+                              sum(apply(tempRBH > 0,1,sum)))
+      cnt <- cnt + 1
+    }
   }
-
-  if (!is.null(network_file_dir)) {
-    network_file_list <- append(
-      network_file_list,
-      list.files(network_file_dir, full.names = TRUE)
-    )
-  }
-
-  ## List of row matrices for the final matrix, representing the rbh of
-  ## network_file_list[rownum] with all other datasets in network_file_list,
-  ## unless the combination has been analyzed before (The matrix will be
-  ## triangular at this stage)
-  adj_rows_list <- lapply(
-    seq_len(length(network_file_list)),
-    function(file1_index) {
-      file1_name <- network_file_list[[file1_index]]
-      cat(paste("loading", file1_name, "\n"))
-      ds1 <- as.matrix(data.table::fread(file1_name))
-      row.names(ds1) <- ds1[, 1]
-      ds1 <- ds1[, -1]
-      colnames(ds1) <- paste0(colnames(ds1),"_",
-                              sub(".*/", "", file1_name))
-      ds1 <- apply(ds1, c(1,2), as.numeric)
-
-      ## For each dataset, including ds1, onward in the network_file_list, compute
-      ## the 2 study network
-      row_list <- lapply(
-        (file1_index):length(network_file_list),
-        function(file2_index) {
-          file2_name <- network_file_list[[file2_index]]
-          ds2 <- as.matrix(data.table::fread(file2_name))
-          row.names(ds2) <- ds2[, 1]
-          ds2 <- ds2[, -1]
-          colnames(ds2) <- paste0(colnames(ds2),"_",
-                                  sub(".*/", "", file2_name))
-          ds2 <- apply(ds2, c(1,2), as.numeric)
-          return(compute_2study_rbh_Correlation_Based(
-            ds1, ds2, lower_quant, upper_quant,
-            max_rank, abs, sparse, method
-          ))
-        }
-      )
-
-      ## Nonempty section will be the triangular part of the matrix containing
-      ## non-zero values
-      if (length(row_list) > 1) {
-        nonempty_section <- do.call(cbind, row_list)
-      } else {
-        nonempty_section <- row_list[[1]]
-      }
-
-      if (file1_index == 1) {
-        return(nonempty_section)
-      }
-
-      ## Create empty section
-      empty_sec_list <- lapply(
-        1:(file1_index - 1),
-        function(file2_index) {
-          file2_name <- network_file_list[[file2_index]]
-          ds2 <- as.matrix(data.table::fread(file2_name))
-          ds2 <- ds2[, -1]
-          colnames(ds2) <- paste0(colnames(ds2),"_",
-                                  sub(".*/", "", file2_name))
-          return(Matrix::Matrix(0,
-                                nrow = ncol(ds1),
-                                ncol = ncol(ds2),
-                                dimnames = list(colnames(ds1), colnames(ds2))
-          ))
-        })
-      empty_section <- do.call(cbind, empty_sec_list)
-
-      return(cbind(empty_section, nonempty_section))
-    })
-
-  ## Combine list of row matrices into one large matrix
-  rbh_mat <- do.call(rbind, adj_rows_list)
-  rbh_mat[lower.tri(rbh_mat)] <- 0
-  ## Make matrix symmetrical
-  rbh_mat <- rbh_mat + t(as.matrix(rbh_mat * upper.tri(rbh_mat)))
-  if (binary) {
-    rbh_mat <- Matrix::Matrix(apply(
-      rbh_mat, c(1, 2),
-      function(x) as.numeric(x > 0)
-    ))
-  }
-
-  return(rbh_mat)
+  
+  rbh          <- rbh + t(rbh) # contains overlap counts for reciprical best hits
+  return(rbh)
 }
+
+
+# Mike/Jimmy, add a wrapper function that calls (construct_multi_rbh_overlap_based or construct_multi_rbh_correlation_based with some flag
+# with options "overlap", "pearson" and "spearman" with "overlap" as default. And we need to move away from file lists and just use lists of membership matrices)
+construct_multi_study_rbh <- function(network_membership_list, method = "overlap",...){
+  
+  if(method == "overlap"){
+    rbh <- construct_multi_rbh_overlap_based(network_membership_list,...)
+  }else if(method %in% c("pearson","spearman")){
+    rbh <- construct_multi_rbh_correlation_based(network_membership_list, method = method,...)
+  }else{cat("method must be \"overlap\", \"pearson\" or \"spearman\"")}
+
+}
+
+#### 
+plot_rbh <- function(rbh,memb_list, anns, file_name = NA,w=10,h=8){
+  ns     <- sapply(memb_list, ncol)
+  gaps   <- sapply(1:length(ns),function(i){sum(ns[1:i])})
+  anns   <- data.frame(Cohorts = gsub("_m.*$","",rownames(rbh))); rownames(anns) <- rownames(rbh)
+  
+  pheatmap::pheatmap(rbh, cluster_rows = F, cluster_cols = F, 
+                     gaps_row = gaps, gaps_col = gaps,
+                     show_rownames = F, show_colnames = F, 
+                     annotation_row = anns,
+                     annotation_col = anns,
+                     color=colorRampPalette(c("lightgrey","blue","navy"))(50), filename = file_name , width = w, height = h)
+}
+
 
 #' Detect Communities in Adjacency/Reciprocal Best Hits Matrix
 #'
