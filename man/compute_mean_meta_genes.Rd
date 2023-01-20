@@ -38,7 +38,7 @@ Compute the average metagene across studies for each community
 \dontrun{
 network_file_dir <- system.file("extdata", package = "consensusNetR")
 network_file_list <- list.files(network_file_dir, full.names = TRUE)
-ma <- construct_meta_rbh(
+ma <- construct_multi_rbh_correlation_based(
   network_file_list = network_file_list,
   upper_quant = .99,
   lower_quant = .05, max_rank = 2

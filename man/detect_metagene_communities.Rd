@@ -8,7 +8,7 @@ detect_metagene_communities(rbh_mat, expansion = 2)
 }
 \arguments{
 \item{rbh_mat}{adjacency/reciprocal best hits matrix, as output by
-\code{\link[=construct_meta_rbh]{construct_meta_rbh()}}}
+\code{\link[=construct_multi_rbh_correlation_based]{construct_multi_rbh_correlation_based()}}}
 
 \item{expansion}{expansion parameter}
 }
@@ -25,7 +25,7 @@ that the clusters are in order of size (1 being the largest)
 \dontrun{
 network_file_dir <- system.file("extdata", package = "consensusNetR")
 network_file_list <- list.files(network_file_dir, full.names = TRUE)
-ma <- construct_meta_rbh(
+ma <- construct_multi_rbh_correlation_based(
   network_file_list = network_file_list,
   upper_quant = .99,``
   lower_quant = .05, max_rank = 2

@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{compute_2study_rbh_Correlation_Based}
 \alias{compute_2study_rbh_Correlation_Based}
-\title{Compute RBH for Two Metagene Datasets}
+\title{Compute correlation based RBH for Two Metagene Datasets}
 \usage{
 compute_2study_rbh_Correlation_Based(
   meta_g1,
@@ -11,7 +11,7 @@ compute_2study_rbh_Correlation_Based(
   upper_quant = 1,
   max_rank = 1,
   abs = FALSE,
-  sparse = TRUE,
+  sparse = FALSE,
   method = "pearson"
 )
 }
@@ -71,4 +71,5 @@ colnames(ds2) <- paste0(colnames(ds2), sub(
 ))
 rbh <- compute_2study_rbh_Correlation_Based(ds1, ds2)
 }
+
 }

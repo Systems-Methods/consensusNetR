@@ -22,15 +22,6 @@ $Cluster with a vector of the cluster associated with each index.}
 gene belongs to a community. In a given dataset, a gene "belongs" to a
 community if the gene's highest loading corresponds to that community.}
 
-\item{network_file_list}{a list of paths to files which can be read by
-data.table::fread. These constitute the metagene datasets. Each file should
-have some sort of common gene_id as the first column}
-
-\item{network_file_dir}{a directory in which all files are relevant to the
-meta reciprocal best hits, all readable by fread. These will be added to the
-file list. Each file should have some sort of common gene_id as the first
-column.}
-
 \item{include_nonmembers}{logical indicating whether or not to include genes
 which do not appear in a community.}
 
@@ -54,7 +45,7 @@ Get Consensus Membership of Genes in Metagene Communities
 \dontrun{
 network_file_dir <- system.file("extdata", package = "consensusNetR")
 network_file_list <- list.files(network_file_dir, full.names = TRUE)
-ma <- construct_meta_rbh(
+ma <- construct_multi_rbh_correlation_based(
   network_file_list = network_file_list,
   upper_quant = .99,
   lower_quant = .05, max_rank = 2

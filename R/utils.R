@@ -7,30 +7,30 @@ fisherZ <- function(r){.5*(log(1 + r) - log(1 - r))}
 calc_cor_of_cor <- function(ex_list){
   genes <- rownames(ex_list[[1]]); for(i in 2:length(ex_list)){ genes <- genes[genes %in% rownames(ex_list[[i]])] }
   doMC::registerDoMC(parallel::detectCores())
-  
+
   message('Computing intra-study correlations...')
-  
+
   cor_mat <- plyr::llply(ex_list, .fun = function(ex){
     temp  <- as.matrix(ex)
     ret   <- as.vector(as.dist(Rfast::cora(t(t_ex)))); rm(t_ex); gc() # Rfast is your friend
-    return(ret) 
-  }, .parallel = T) 
+    return(ret)
+  }, .parallel = T)
   rm(ex_list); gc()
   cor_mat <- do.call(cbind, cor_mat)
-  
+
   message('Converting correlations to Z scores...')
   cor_mat     <- DescTools::FisherZ(cor_mat) # transform correlations in to z space in order to compute correlation bewteen datasets.
-  
+
   remove_indices     <- apply(cor_mat, 2, function(i) which(is.na(i)))
   remove_indices_inf <- apply(cor_mat, 2, function(i) which(is.infinite(i)))
   remove_indices     <- unique(c(unlist(remove_indices), unlist(remove_indices_inf)))
   if (length(remove_indices) > 0){ cor_mat <- cor_mat[-remove_indices,] }
-  
+
   cor_of_cors            <- cor(cor_mat, use="pairwise.complete.obs")
   colnames(cor_of_cors)  <- colnames(cor_mat)
   row.names(cor_of_cors) <- colnames(cor_mat)
   rm(cor_mat); gc()
-  
+
   return(cor_of_cors)
 }
 
@@ -45,9 +45,9 @@ compare_networks <- function(net_memb_1,
   K_2        <- min(ncol(net_memb_2), K)
   net_memb_1 <- net_memb_1[rownames(net_memb_1) %in% rownames(net_memb_2),1:K_1]
   net_memb_2 <- net_memb_2[match(rownames(net_memb_1), rownames(net_memb_2)),1:K_2]
-  rbh        <- compute_2Network_RBH_Overlap_Based(net_memb_1, net_memb_2) 
+  rbh        <- compute_2Network_RBH_Overlap_Based(net_memb_1, net_memb_2)
   overlap    <- sum(rbh > 0)
-  
+
   comms_1    <- apply(net_memb_1, 1,
                       function(x){
                         x[x < memb_cut] <- 0
@@ -82,18 +82,18 @@ compare_networks <- function(net_memb_1,
   dist_1     <- stats::as.dist(Rfast::cora(t(net_memb_1)))
   dist_2     <- stats::as.dist(Rfast::cora(t(net_memb_2)))
   cor_mat    <- cbind(fisherZ(unlist(dist_1)), fisherZ(unlist(dist_2)))
-  
+
   remove_indices     <- apply(cor_mat, 2, function(i) which(is.na(i)))
   remove_indices_inf <- apply(cor_mat, 2, function(i) which(is.infinite(i)))
   remove_indices     <- unique(c(unlist(remove_indices), unlist(remove_indices_inf)))
   if (length(remove_indices) > 0){ cor_mat <- cor_mat[-remove_indices,] }
-  
+
   cor_of_cor <- stats::cor(cor_mat[,1], cor_mat[,2],use = "pairwise")
 
   dend_1     <- stats::hclust(1 - dist_1)
   dend_2     <- stats::hclust(1 - dist_2)
   cor_coph   <- dendextend::cor_cophenetic(dend_1, dend_2)
-  
+
   return(data.frame(adjRand, cor_of_cor, cor_coph, overlap))
 }
 
@@ -177,7 +177,7 @@ compute_2Network_RBH_Overlap_Based <- function(meta_g1,
 #' @param meta_g1,meta_g2 metagene matrices from two different datasets. Row
 #' names of these matrices must be gene names, and the column names should be
 #' unique metagene names.
-#' @inheritParams construct_meta_rbh
+#' @inheritParams construct_multi_rbh_correlation_based
 #'
 #' @return Matrix with rows matching the columns in meta_g1 and columns
 #' matching the columns of meta_g2, with values 1 indicating two metagenes are a
@@ -205,7 +205,7 @@ compute_2Network_RBH_Overlap_Based <- function(meta_g1,
 #' ))
 #' rbh <- compute_2study_rbh_Correlation_Based(ds1, ds2)
 #' }
-#' 
+#'
 compute_2study_rbh_Correlation_Based <- function(meta_g1, meta_g2, lower_quant = 0,
                                                  upper_quant = 1.0, max_rank = 1,
                                                  abs = FALSE, sparse = FALSE, method = "pearson") {
@@ -376,10 +376,10 @@ construct_multi_rbh_overlap_based <- function(network_membership_list,
 #' \dontrun{
 #' network_file_dir <- system.file("extdata", package = "consensusNetR")
 #' network_file_list <- list.files(network_file_dir, full.names = TRUE)
-#' ma <- construct_meta_rbh( network_file_list = network_file_list,
+#' ma <- construct_multi_rbh_correlation_based( network_file_list = network_file_list,
 #'   upper_quant = .99, lower_quant = .05, max_rank = 2)
 #'   }
-#'   
+#'
 construct_multi_rbh_correlation_based <- function(network_membership_list,
                                                   lower_quant = 0,
                                                   upper_quant = 1.0, max_rank = 1,
@@ -395,10 +395,10 @@ construct_multi_rbh_correlation_based <- function(network_membership_list,
   rbh           <- matrix(0, N,N)
   colnames(rbh) <- comms
   rownames(rbh) <- comms;
-  
+
   rbh_metrics <- matrix(NA, choose(length(network_membership_list),2), 5);
   cnt         <- 1
-  
+
   for (i in 1:(length(network_membership_list) - 1))
   {
     for (j in (i + 1):length(network_membership_list))
@@ -407,17 +407,17 @@ construct_multi_rbh_correlation_based <- function(network_membership_list,
       rowStop  <- rowStart + ns[i] - 1
       colStart <- sum(ns[(1:j) - 1]) + 1
       colStop  <- colStart + ns[j] - 1
-      
+
       tempRBH  <- compute_2study_rbh_Correlation_Based(
         meta_g1     = network_membership_list[[i]],
-        meta_g2     = network_membership_list[[j]], 
+        meta_g2     = network_membership_list[[j]],
         lower_quant = lower_quant,
-        upper_quant = upper_quant, 
+        upper_quant = upper_quant,
         max_rank    = max_rank,
-        abs         = abs, 
-        sparse      = sparse, 
+        abs         = abs,
+        sparse      = sparse,
         method      = method)
-      
+
       rbh[rowStart:rowStop, colStart:colStop] <- tempRBH
       message(metaStudies[i],": ",
               ncol(network_membership_list[[i]]),
@@ -432,7 +432,7 @@ construct_multi_rbh_correlation_based <- function(network_membership_list,
       cnt <- cnt + 1
     }
   }
-  
+
   rbh          <- rbh + t(rbh) # contains overlap counts for reciprical best hits
   return(rbh)
 }
@@ -441,7 +441,7 @@ construct_multi_rbh_correlation_based <- function(network_membership_list,
 # Wrapper function that calls (construct_multi_rbh_overlap_based or construct_multi_rbh_correlation_based with some flag
 # with options "overlap", "pearson" and "spearman" with "overlap" as default. And we need to move away from file lists and just use lists of membership matrices)
 construct_multi_study_rbh <- function(network_membership_list, method = "overlap",...){
-  
+
   if(method == "overlap"){
     rbh <- construct_multi_rbh_overlap_based(network_membership_list,...)
   }else if(method %in% c("pearson","spearman")){
@@ -450,15 +450,15 @@ construct_multi_study_rbh <- function(network_membership_list, method = "overlap
 
 }
 
-#### 
+####
 plot_rbh <- function(rbh,memb_list, anns, file_name = NA,w=10,h=8){
   ns     <- sapply(memb_list, ncol)
   gaps   <- sapply(1:length(ns),function(i){sum(ns[1:i])})
   anns   <- data.frame(Cohorts = gsub("_m.*$","",rownames(rbh))); rownames(anns) <- rownames(rbh)
-  
-  pheatmap::pheatmap(rbh, cluster_rows = F, cluster_cols = F, 
+
+  pheatmap::pheatmap(rbh, cluster_rows = F, cluster_cols = F,
                      gaps_row = gaps, gaps_col = gaps,
-                     show_rownames = F, show_colnames = F, 
+                     show_rownames = F, show_colnames = F,
                      annotation_row = anns,
                      annotation_col = anns,
                      color=colorRampPalette(c("lightgrey","blue","navy"))(50), filename = file_name , width = w, height = h)
@@ -471,7 +471,7 @@ plot_rbh <- function(rbh,memb_list, anns, file_name = NA,w=10,h=8){
 #' cluster/community number that each metagene is associated with, renamed so
 #' that the clusters are in order of size (1 being the largest)
 #' @param rbh_mat adjacency/reciprocal best hits matrix, as output by
-#' [construct_meta_rbh()]
+#' [construct_multi_rbh_correlation_based()]
 #' @param expansion expansion parameter
 #'
 #' @return The output of [MCL::mcl()], renamed so that the clusters
@@ -482,7 +482,7 @@ plot_rbh <- function(rbh,memb_list, anns, file_name = NA,w=10,h=8){
 #' \dontrun{
 #' network_file_dir <- system.file("extdata", package = "consensusNetR")
 #' network_file_list <- list.files(network_file_dir, full.names = TRUE)
-#' ma <- construct_meta_rbh(
+#' ma <- construct_multi_rbh_correlation_based(
 #'   network_file_list = network_file_list,
 #'   upper_quant = .99,``
 #'   lower_quant = .05, max_rank = 2
@@ -524,7 +524,7 @@ detect_metagene_communities <- function(rbh_mat,
 #' Currently only TRUE is supported
 #' @param compress indicates whether to drop duplicate community metagenes. Assumes
 #' first one is the one to keep (largest or best). Currently only TRUE is supported
-#' @inheritParams construct_meta_rbh
+#' @inheritParams construct_multi_rbh_correlation_based
 #'
 #' @return data.frame containing gene ids and their associated most likely
 #' cluster(s) in $cluster and $n_studies, representing the number of studies
@@ -537,7 +537,7 @@ detect_metagene_communities <- function(rbh_mat,
 #' \dontrun{
 #' network_file_dir <- system.file("extdata", package = "consensusNetR")
 #' network_file_list <- list.files(network_file_dir, full.names = TRUE)
-#' ma <- construct_meta_rbh(
+#' ma <- construct_multi_rbh_correlation_based(
 #'   network_file_list = network_file_list,
 #'   upper_quant = .99,
 #'   lower_quant = .05, max_rank = 2
@@ -724,7 +724,7 @@ compressMetaGenes <- function(y,method = "none",
 #' \dontrun{
 #' network_file_dir <- system.file("extdata", package = "consensusNetR")
 #' network_file_list <- list.files(network_file_dir, full.names = TRUE)
-#' ma <- construct_meta_rbh(
+#' ma <- construct_multi_rbh_correlation_based(
 #'   network_file_list = network_file_list,
 #'   upper_quant = .99,
 #'   lower_quant = .05, max_rank = 2
@@ -844,7 +844,7 @@ normalize_eigengenes <- function(eigen_list, target_study_index=1){
   qnormed_list <- list()
   for(i in 1:nrow(eigen_list[[target_study_index]])){
     t_list   <- plyr::llply(eigen_list, function(x){return(x[i,])})
-    q_normed <- aroma.light::normalizeQuantileRank(t_list, xTarget = sort(t_list[[target_study_index]])) 
+    q_normed <- aroma.light::normalizeQuantileRank(t_list, xTarget = sort(t_list[[target_study_index]]))
     qnormed_list[[comms[i]]] <- q_normed
   }
   return(qnormed_list)
@@ -852,26 +852,26 @@ normalize_eigengenes <- function(eigen_list, target_study_index=1){
 
 
 ########
-# plot individual eigengene distributions 
+# plot individual eigengene distributions
 plot_consensus_eig_dist <-  function(eigen_list, target_study_index=1, fileName= NULL)
 {
   qnormed_list   <- lapply(normalize_eigengenes(eigen_list = eigen_list, target_study_index = target_study_index),unlist)
   temp           <- as.data.frame(qnormed_list); rm(qnormed_list)
 
-  # Plots for eigengene distributions 
+  # Plots for eigengene distributions
   temp_eigen           <- as.data.frame(t(temp));  rm(temp); gc()
   temp_eigen$Community <- factor(rownames(temp_eigen), levels =rownames(temp_eigen))
   temp_eigen           <- tidyr::pivot_longer(data = temp_eigen,names_to = "sample",cols = colnames(temp_eigen)[-ncol(temp_eigen)])
-  
+
   require(ggplot2)
   require(hrbrthemes)
-  eigen_dens_plots     <- ggplot(temp_eigen, aes(x=value,color=Community, fill=Community)) + geom_density(alpha=0.8) + facet_wrap(~Community,scales = "free") +  
+  eigen_dens_plots     <- ggplot(temp_eigen, aes(x=value,color=Community, fill=Community)) + geom_density(alpha=0.8) + facet_wrap(~Community,scales = "free") +
     hrbrthemes::theme_ipsum() +
     ylab("") + xlab("") + theme(
-      legend.position="none", 
+      legend.position="none",
       panel.spacing = unit(0.1, "lines"),
       strip.text.x = element_text(size = 12),axis.text.x = element_blank(),axis.text.y  = element_blank())
-  
+
   ggsave(fileName,eigen_dens_plots, height = 10, width = 12, dpi = 1000)
 }
 
