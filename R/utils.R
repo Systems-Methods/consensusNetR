@@ -5,6 +5,15 @@ fisherZ <- function(r){.5*(log(1 + r) - log(1 - r))}
 #  function for computing cor of cor between study expression data
 # takes list of expression datasets in as input
 calc_cor_of_cor <- function(ex_list){
+  needed_packages <- c('doMC','parallel','Rfast')
+  missing_packages <- !vapply(needed_packages,
+                              FUN = requireNamespace, quietly = TRUE,
+                              FUN.VALUE = logical(1))
+  if (any(missing_packages)) {
+    stop('Must have the following R packages installed for this function: ',
+         paste0(names(missing_packages[missing_packages]), collapse = ', '))
+  }
+
   genes <- rownames(ex_list[[1]]); for(i in 2:length(ex_list)){ genes <- genes[genes %in% rownames(ex_list[[i]])] }
   doMC::registerDoMC(parallel::detectCores())
 
@@ -12,10 +21,9 @@ calc_cor_of_cor <- function(ex_list){
 
   cor_mat <- plyr::llply(ex_list, .fun = function(ex){
     temp  <- as.matrix(ex)
-    ret   <- as.vector(as.dist(Rfast::cora(t(t_ex)))); rm(t_ex); gc() # Rfast is your friend
+    ret   <- as.vector(stats::as.dist(Rfast::cora(t(temp))));
     return(ret)
   }, .parallel = T)
-  rm(ex_list); gc()
   cor_mat <- do.call(cbind, cor_mat)
 
   message('Converting correlations to Z scores...')
@@ -26,10 +34,9 @@ calc_cor_of_cor <- function(ex_list){
   remove_indices     <- unique(c(unlist(remove_indices), unlist(remove_indices_inf)))
   if (length(remove_indices) > 0){ cor_mat <- cor_mat[-remove_indices,] }
 
-  cor_of_cors            <- cor(cor_mat, use="pairwise.complete.obs")
+  cor_of_cors            <- stats::cor(cor_mat, use="pairwise.complete.obs")
   colnames(cor_of_cors)  <- colnames(cor_mat)
   row.names(cor_of_cors) <- colnames(cor_mat)
-  rm(cor_mat); gc()
 
   return(cor_of_cors)
 }
@@ -41,6 +48,15 @@ compare_networks <- function(net_memb_1,
                              K = 75,
                              memb_cut = 0.5,
                              na_flag = "none") {
+  needed_packages <- c('Rfast')
+  missing_packages <- !vapply(needed_packages,
+                              FUN = requireNamespace, quietly = TRUE,
+                              FUN.VALUE = logical(1))
+  if (any(missing_packages)) {
+    stop('Must have the following R packages installed for this function: ',
+         paste0(names(missing_packages[missing_packages]), collapse = ', '))
+  }
+
   K_1        <- min(ncol(net_memb_1), K)
   K_2        <- min(ncol(net_memb_2), K)
   net_memb_1 <- net_memb_1[rownames(net_memb_1) %in% rownames(net_memb_2),1:K_1]
@@ -290,6 +306,7 @@ compute_2study_rbh_Correlation_Based <- function(meta_g1, meta_g2, lower_quant =
 #' indicating stronger membership in a community
 #' @param memb_cut membership threshold for stricter thresholding. Only genes with
 #' membership score greater the threshold are used
+#' @export
 construct_multi_rbh_overlap_based <- function(network_membership_list,
                                               top_n = 50,
                                               memb_cut = 0) {
@@ -452,6 +469,15 @@ construct_multi_study_rbh <- function(network_membership_list, method = "overlap
 
 ####
 plot_rbh <- function(rbh,memb_list, anns, file_name = NA,w=10,h=8){
+  needed_packages <- c('pheatmap')
+  missing_packages <- !vapply(needed_packages,
+                              FUN = requireNamespace, quietly = TRUE,
+                              FUN.VALUE = logical(1))
+  if (any(missing_packages)) {
+    stop('Must have the following R packages installed for this function: ',
+         paste0(names(missing_packages[missing_packages]), collapse = ', '))
+  }
+
   ns     <- sapply(memb_list, ncol)
   gaps   <- sapply(1:length(ns),function(i){sum(ns[1:i])})
   anns   <- data.frame(Cohorts = gsub("_m.*$","",rownames(rbh))); rownames(anns) <- rownames(rbh)
@@ -461,7 +487,8 @@ plot_rbh <- function(rbh,memb_list, anns, file_name = NA,w=10,h=8){
                      show_rownames = F, show_colnames = F,
                      annotation_row = anns,
                      annotation_col = anns,
-                     color=colorRampPalette(c("lightgrey","blue","navy"))(50), filename = file_name , width = w, height = h)
+                     color = grDevices::colorRampPalette(c("lightgrey","blue","navy"))(50),
+                     filename = file_name , width = w, height = h)
 }
 
 
@@ -518,13 +545,14 @@ detect_metagene_communities <- function(rbh_mat,
 #' @param min_studies the minimum threshold of studies/datasets indicating a
 #' gene belongs to a community. In a given dataset, a gene "belongs" to a
 #' community if the gene's highest loading corresponds to that community.
-#' @param include_nonmembers logical indicating whether or not to include genes
+#' @param network_file_list network_file_list
+#' @param network_file_dir network_file_dir
+#' @param include_nonmembers include_nonmembers
 #' which do not appear in a community.
 #' @param rank_based flag indicating whether to use rank when determing max metagene.
 #' Currently only TRUE is supported
 #' @param compress indicates whether to drop duplicate community metagenes. Assumes
 #' first one is the one to keep (largest or best). Currently only TRUE is supported
-#' @inheritParams construct_multi_rbh_correlation_based
 #'
 #' @return data.frame containing gene ids and their associated most likely
 #' cluster(s) in $cluster and $n_studies, representing the number of studies
@@ -840,6 +868,15 @@ find_unique_top_genes <- function(mGenes, K=10,
 ##########
 # quantile normalize of each communities eigen genes based on a target network
 normalize_eigengenes <- function(eigen_list, target_study_index=1){
+  needed_packages <- c('aroma.light')
+  missing_packages <- !vapply(needed_packages,
+                              FUN = requireNamespace, quietly = TRUE,
+                              FUN.VALUE = logical(1))
+  if (any(missing_packages)) {
+    stop('Must have the following R packages installed for this function: ',
+         paste0(names(missing_packages[missing_packages]), collapse = ', '))
+  }
+
   comms        <- rownames(eigen_list[[target_study_index]])
   qnormed_list <- list()
   for(i in 1:nrow(eigen_list[[target_study_index]])){
@@ -853,26 +890,45 @@ normalize_eigengenes <- function(eigen_list, target_study_index=1){
 
 ########
 # plot individual eigengene distributions
+#' @importFrom rlang .data
 plot_consensus_eig_dist <-  function(eigen_list, target_study_index=1, fileName= NULL)
 {
+  needed_packages <- c('ggplot2', 'hrbrthemes')
+  missing_packages <- !vapply(needed_packages,
+                              FUN = requireNamespace, quietly = TRUE,
+                              FUN.VALUE = logical(1))
+  if (any(missing_packages)) {
+    stop('Must have the following R packages installed for this function: ',
+         paste0(names(missing_packages[missing_packages]), collapse = ', '))
+  }
+
   qnormed_list   <- lapply(normalize_eigengenes(eigen_list = eigen_list, target_study_index = target_study_index),unlist)
   temp           <- as.data.frame(qnormed_list); rm(qnormed_list)
 
   # Plots for eigengene distributions
-  temp_eigen           <- as.data.frame(t(temp));  rm(temp); gc()
-  temp_eigen$Community <- factor(rownames(temp_eigen), levels =rownames(temp_eigen))
-  temp_eigen           <- tidyr::pivot_longer(data = temp_eigen,names_to = "sample",cols = colnames(temp_eigen)[-ncol(temp_eigen)])
+  temp_eigen           <- as.data.frame(t(temp));
+  temp_eigen$Community <- factor(rownames(temp_eigen), levels = rownames(temp_eigen))
+  temp_eigen           <- tidyr::pivot_longer(data = temp_eigen,names_to = "sample",
+                                              cols = colnames(temp_eigen)[-ncol(temp_eigen)])
 
-  require(ggplot2)
-  require(hrbrthemes)
-  eigen_dens_plots     <- ggplot(temp_eigen, aes(x=value,color=Community, fill=Community)) + geom_density(alpha=0.8) + facet_wrap(~Community,scales = "free") +
+  eigen_dens_plots  <- ggplot2::ggplot(
+    temp_eigen,
+    ggplot2::aes(x = .data$value,
+                 color = .data$Community,
+                 fill = .data$Community)) +
+    ggplot2::geom_density(alpha = 0.8) +
+    ggplot2::facet_wrap(~Community,scales = "free") +
     hrbrthemes::theme_ipsum() +
-    ylab("") + xlab("") + theme(
-      legend.position="none",
-      panel.spacing = unit(0.1, "lines"),
-      strip.text.x = element_text(size = 12),axis.text.x = element_blank(),axis.text.y  = element_blank())
+    ggplot2::ylab("") +
+    ggplot2::xlab("") +
+    ggplot2::theme(
+      legend.position = "none",
+      panel.spacing = ggplot2::unit(0.1, "lines"),
+      strip.text.x = ggplot2::element_text(size = 12),
+      axis.text.x = ggplot2::element_blank(),
+      axis.text.y  = ggplot2::element_blank())
 
-  ggsave(fileName,eigen_dens_plots, height = 10, width = 12, dpi = 1000)
+  ggplot2::ggsave(fileName,eigen_dens_plots, height = 10, width = 12, dpi = 1000)
 }
 
 

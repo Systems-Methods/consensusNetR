@@ -22,7 +22,11 @@ $Cluster with a vector of the cluster associated with each index.}
 gene belongs to a community. In a given dataset, a gene "belongs" to a
 community if the gene's highest loading corresponds to that community.}
 
-\item{include_nonmembers}{logical indicating whether or not to include genes
+\item{network_file_list}{network_file_list}
+
+\item{network_file_dir}{network_file_dir}
+
+\item{include_nonmembers}{include_nonmembers
 which do not appear in a community.}
 
 \item{compress}{indicates whether to drop duplicate community metagenes. Assumes
