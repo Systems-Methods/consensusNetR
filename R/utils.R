@@ -1,9 +1,13 @@
 # utility function for Fisher's z transform
 fisherZ <- function(r){.5*(log(1 + r) - log(1 - r))}
-####
 
-#  function for computing cor of cor between study expression data
-# takes list of expression datasets in as input
+#' Computing cor of cor between study expression data
+#'
+#' @param ex_list expression datasets
+#'
+#' @return cor_of_cors
+#' @export
+#'
 calc_cor_of_cor <- function(ex_list){
   needed_packages <- c('doMC','parallel','Rfast')
   missing_packages <- !vapply(needed_packages,
@@ -14,7 +18,10 @@ calc_cor_of_cor <- function(ex_list){
          paste0(names(missing_packages[missing_packages]), collapse = ', '))
   }
 
-  genes <- rownames(ex_list[[1]]); for(i in 2:length(ex_list)){ genes <- genes[genes %in% rownames(ex_list[[i]])] }
+  genes <- rownames(ex_list[[1]]);
+  for (i in 2:length(ex_list)) {
+    genes <- genes[genes %in% rownames(ex_list[[i]])]
+  }
   doMC::registerDoMC(parallel::detectCores())
 
   message('Computing intra-study correlations...')
@@ -32,22 +39,35 @@ calc_cor_of_cor <- function(ex_list){
   remove_indices     <- apply(cor_mat, 2, function(i) which(is.na(i)))
   remove_indices_inf <- apply(cor_mat, 2, function(i) which(is.infinite(i)))
   remove_indices     <- unique(c(unlist(remove_indices), unlist(remove_indices_inf)))
-  if (length(remove_indices) > 0){ cor_mat <- cor_mat[-remove_indices,] }
+  if (length(remove_indices) > 0) {
+    cor_mat <- cor_mat[-remove_indices,]
+    }
 
-  cor_of_cors            <- stats::cor(cor_mat, use="pairwise.complete.obs")
+  cor_of_cors            <- stats::cor(cor_mat, use = "pairwise.complete.obs")
   colnames(cor_of_cors)  <- colnames(cor_mat)
   row.names(cor_of_cors) <- colnames(cor_mat)
 
   return(cor_of_cors)
 }
 
-###
 
+#' compare_networks
+#'
+#' @param net_memb_1 net_memb_1
+#' @param net_memb_2 net_memb_2
+#' @param K K
+#' @param memb_cut memb_cut
+#' @param na_flag na_flag
+#'
+#' @return data.frame: adjRand, cor_of_cor, cor_coph, overlap
+#' @export
+#'
 compare_networks <- function(net_memb_1,
                              net_memb_2,
                              K = 75,
                              memb_cut = 0.5,
-                             na_flag = "none") {
+                             na_flag = c("none", "both", "either")) {
+  na_flag <- match.arg(na_flag)
   needed_packages <- c('Rfast')
   missing_packages <- !vapply(needed_packages,
                               FUN = requireNamespace, quietly = TRUE,
@@ -77,20 +97,19 @@ compare_networks <- function(net_memb_1,
                         if (length(ind) > 1) {ind <- NA}
                         return(ind)})
 
-  if (na_flag == "none") {
-    inds <- rep(TRUE,length(comms_1))
-  } else if (na_flag == "both" ) {
-    inds <- (!is.na(comms_1)) & !(is.na(comms_2))
-  } else if (na_flag == "either") {
-    inds <- (!is.na(comms_1)) | (!is.na(comms_2))
-  } else {
-    stop("na_flag must be \"none\", \"both\", or \"either\"" )
-  }
+  inds <- switch(
+    na_flag,
+    none = rep(TRUE, length(comms_1)),
+    both = !is.na(comms_1) & !is.na(comms_2),
+    either = !is.na(comms_1) | !is.na(comms_2)
+  )
 
   comms_1    <- comms_1[inds]
   comms_2    <- comms_2[inds]
-  net_memb_1 <- net_memb_1[inds,]; net_memb_1[net_memb_1 == 1] <- .99; net_memb_1[net_memb_1 == -1] <- -.99;
-  net_memb_2 <- net_memb_2[inds,]; net_memb_2[net_memb_2 == 1] <- .99; net_memb_2[net_memb_2 == -1] <- -.99;
+  net_memb_1 <- net_memb_1[inds,]; net_memb_1[net_memb_1 == 1] <- .99;
+  net_memb_1[net_memb_1 == -1] <- -.99;
+  net_memb_2 <- net_memb_2[inds,]; net_memb_2[net_memb_2 == 1] <- .99;
+  net_memb_2[net_memb_2 == -1] <- -.99;
   adjRand    <- mclust::adjustedRandIndex(comms_1,comms_2)
 
   net_memb_1 <- fisherZ(net_memb_1)
@@ -399,8 +418,11 @@ construct_multi_rbh_overlap_based <- function(network_membership_list,
 #'
 construct_multi_rbh_correlation_based <- function(network_membership_list,
                                                   lower_quant = 0,
-                                                  upper_quant = 1.0, max_rank = 1,
-                                                  abs = FALSE, sparse = FALSE, method = "pearson",
+                                                  upper_quant = 1.0,
+                                                  max_rank = 1,
+                                                  abs = FALSE,
+                                                  sparse = FALSE,
+                                                  method = "pearson",
                                                   binary = FALSE) {
   metaStudies <- names(network_membership_list)
   ns          <- sapply(network_membership_list, ncol)
@@ -450,25 +472,66 @@ construct_multi_rbh_correlation_based <- function(network_membership_list,
     }
   }
 
-  rbh          <- rbh + t(rbh) # contains overlap counts for reciprical best hits
+  rbh          <- rbh + t(rbh) # contains overlap counts for reciprocal best hits
   return(rbh)
 }
 
 
-# Wrapper function that calls (construct_multi_rbh_overlap_based or construct_multi_rbh_correlation_based with some flag
-# with options "overlap", "pearson" and "spearman" with "overlap" as default. And we need to move away from file lists and just use lists of membership matrices)
-construct_multi_study_rbh <- function(network_membership_list, method = "overlap",...){
+#'  Wrapper function multi_rbh_overlap_based or construct_multi_rbh_correlation_based
+#'
+#' @param network_membership_list a list containing community membership scores for each
+#' network. Where rownames contain unique gene ids and column
+#' @param method overlap, pearson, or spearman
+#' @inheritParams construct_multi_rbh_overlap_based
+#' @inheritParams construct_multi_rbh_correlation_based
+#' @return reciprocal best hits matrix between all metagenes across all of the
+#' datasets in the specified files, with dimensions named uniquely based on the
+#' file column names as well as the file names (to ensure uniqueness).
+#' @export
+#'
+#' @details `top_n` and `memb_cut` arguments are used if `method = "overlap"`
+#' and other arguments are used if method is "pearson" or "spearman".
+construct_multi_study_rbh <- function(network_membership_list,
+                                      method = c("overlap", "pearson", "spearman"),
+                                      top_n = 50,
+                                      memb_cut = 0,
+                                      lower_quant = 0,
+                                      upper_quant = 1.0,
+                                      max_rank = 1,
+                                      abs = FALSE,
+                                      sparse = FALSE,
+                                      binary = FALSE){
+  method <- match.arg(method)
 
-  if(method == "overlap"){
-    rbh <- construct_multi_rbh_overlap_based(network_membership_list,...)
-  }else if(method %in% c("pearson","spearman")){
-    rbh <- construct_multi_rbh_correlation_based(network_membership_list, method = method,...)
-  }else{cat("method must be \"overlap\", \"pearson\" or \"spearman\"")}
-
+  if (method == "overlap") {
+    construct_multi_rbh_overlap_based(network_membership_list,
+                                      top_n,
+                                      memb_cut)
+  } else if (method %in% c("pearson","spearman")) {
+    construct_multi_rbh_correlation_based(network_membership_list,
+                                          method = method,
+                                          lower_quant,
+                                          upper_quant,
+                                          max_rank,
+                                          abs,
+                                          sparse,
+                                          binary)
+  }
 }
 
 ####
-plot_rbh <- function(rbh,memb_list, anns, file_name = NA,w=10,h=8){
+#' RBH Heatmap Creation
+#'
+#' @param rbh reciprocal best hits matrix (output of [construct_multi_study_rbh()])
+#' @param memb_list memb_list?
+#' @param file_name File name
+#' @param width figure width
+#' @param height figure height
+#'
+#' @return pheatmap object
+#' @export
+#'
+plot_rbh <- function(rbh, memb_list, file_name = NA, width = 10, height = 8){
   needed_packages <- c('pheatmap')
   missing_packages <- !vapply(needed_packages,
                               FUN = requireNamespace, quietly = TRUE,
@@ -480,15 +543,16 @@ plot_rbh <- function(rbh,memb_list, anns, file_name = NA,w=10,h=8){
 
   ns     <- sapply(memb_list, ncol)
   gaps   <- sapply(1:length(ns),function(i){sum(ns[1:i])})
-  anns   <- data.frame(Cohorts = gsub("_m.*$","",rownames(rbh))); rownames(anns) <- rownames(rbh)
+  anns   <- data.frame(Cohorts = gsub("_m.*$","",rownames(rbh)));
+  rownames(anns) <- rownames(rbh)
 
-  pheatmap::pheatmap(rbh, cluster_rows = F, cluster_cols = F,
+  pheatmap::pheatmap(rbh, cluster_rows = FALSE, cluster_cols = FALSE,
                      gaps_row = gaps, gaps_col = gaps,
-                     show_rownames = F, show_colnames = F,
+                     show_rownames = FALSE, show_colnames = FALSE,
                      annotation_row = anns,
                      annotation_col = anns,
                      color = grDevices::colorRampPalette(c("lightgrey","blue","navy"))(50),
-                     filename = file_name , width = w, height = h)
+                     filename = file_name , width = width, height = height)
 }
 
 
@@ -826,12 +890,12 @@ compute_mean_meta_genes <- function(consensus,
 
 #' Identify Top Gene of Communities that are unique (only belong to one community)
 #'
-#' @param mGenes metat gene matrix rownames being gene IDs and columns being
+#' @param mGenes meta gene matrix rownames being gene IDs and columns being
 #' community loadings (i.e. metagenes).
 #' @param K number of unique genes to find.
-#' @param max_iter maximum nuber of iterations to avoid looping to meaningless top genes
+#' @param max_iter maximum number of iterations to avoid looping to meaningless top genes
 #'
-#' @return data.rame with key = community and value = top gene ID. Top genes will only
+#' @return data.frame with key = community and value = top gene ID. Top genes will only
 #' be associated with one module.
 #' @export
 #'
@@ -879,7 +943,7 @@ normalize_eigengenes <- function(eigen_list, target_study_index=1){
 
   comms        <- rownames(eigen_list[[target_study_index]])
   qnormed_list <- list()
-  for(i in 1:nrow(eigen_list[[target_study_index]])){
+  for (i in 1:nrow(eigen_list[[target_study_index]])) {
     t_list   <- plyr::llply(eigen_list, function(x){return(x[i,])})
     q_normed <- aroma.light::normalizeQuantileRank(t_list, xTarget = sort(t_list[[target_study_index]]))
     qnormed_list[[comms[i]]] <- q_normed
@@ -888,10 +952,24 @@ normalize_eigengenes <- function(eigen_list, target_study_index=1){
 }
 
 
-########
-# plot individual eigengene distributions
+#' Plot individual eigengene distributions
+#' @param eigen_list eigen_list
+#' @param target_study_index target_study_index
+#' @param filename File name
+#' @param width figure width
+#' @param height figure height
+#' @param dpi Plot resolution. Also accepts a string input: "retina" (320),
+#' "print" (300), or "screen" (72). Applies only to raster output types.
+#' @return eigengene distributions if `filename` is na, and saved figure is
+#' `filename` provided
+#' @export
 #' @importFrom rlang .data
-plot_consensus_eig_dist <-  function(eigen_list, target_study_index=1, fileName= NULL)
+plot_consensus_eig_dist <-  function(eigen_list,
+                                     target_study_index = 1,
+                                     filename = NA,
+                                     width = 12,
+                                     height = 10,
+                                     dpi = 1000)
 {
   needed_packages <- c('ggplot2', 'hrbrthemes')
   missing_packages <- !vapply(needed_packages,
@@ -928,7 +1006,12 @@ plot_consensus_eig_dist <-  function(eigen_list, target_study_index=1, fileName=
       axis.text.x = ggplot2::element_blank(),
       axis.text.y  = ggplot2::element_blank())
 
-  ggplot2::ggsave(fileName,eigen_dens_plots, height = 10, width = 12, dpi = 1000)
+  if (is.na(filename)) {
+    eigen_dens_plots
+  } else {
+    ggplot2::ggsave(filename,eigen_dens_plots,
+                    height = height, width = width, dpi = dpi)
+  }
 }
 
 

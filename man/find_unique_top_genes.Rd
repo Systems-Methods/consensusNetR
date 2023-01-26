@@ -7,15 +7,15 @@
 find_unique_top_genes(mGenes, K = 10, max_iter = 10)
 }
 \arguments{
-\item{mGenes}{metat gene matrix rownames being gene IDs and columns being
+\item{mGenes}{meta gene matrix rownames being gene IDs and columns being
 community loadings (i.e. metagenes).}
 
 \item{K}{number of unique genes to find.}
 
-\item{max_iter}{maximum nuber of iterations to avoid looping to meaningless top genes}
+\item{max_iter}{maximum number of iterations to avoid looping to meaningless top genes}
 }
 \value{
-data.rame with key = community and value = top gene ID. Top genes will only
+data.frame with key = community and value = top gene ID. Top genes will only
 be associated with one module.
 }
 \description{
