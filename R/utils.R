@@ -22,6 +22,7 @@ calc_cor_of_cor <- function(ex_list){
   for (i in 2:length(ex_list)) {
     genes <- genes[genes %in% rownames(ex_list[[i]])]
   }
+  print(paste("Creating cor-of-cor using", length(genes), "genes")
   doMC::registerDoMC(parallel::detectCores())
 
   message('Computing intra-study correlations...')
