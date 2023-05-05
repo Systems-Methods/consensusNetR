@@ -43,8 +43,8 @@ calc_cor_of_cor <- function(ex_list){
     cor_mat <- cor_mat[-remove_indices,]
     }
 
-  cor_of_cors            <- stats::cor(cor_mat, use = "pairwise.complete.obs")
-  #cor_of_cors            <- Rfast::cora(cor_mat)
+  #cor_of_cors            <- stats::cor(cor_mat, use = "pairwise.complete.obs")
+  cor_of_cors            <- Rfast::cora(cor_mat)
   colnames(cor_of_cors)  <- colnames(cor_mat)
   row.names(cor_of_cors) <- colnames(cor_mat)
 
