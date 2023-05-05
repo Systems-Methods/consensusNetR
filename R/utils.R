@@ -47,7 +47,7 @@ calc_cor_of_cor <- function(ex_list){
   cor_of_cors            <- Rfast::cora(cor_mat)
   colnames(cor_of_cors)  <- colnames(cor_mat)
   row.names(cor_of_cors) <- colnames(cor_mat)
-
+  rm(cor_mat); gc()
   return(cor_of_cors)
 }
 
