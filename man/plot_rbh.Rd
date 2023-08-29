@@ -7,7 +7,9 @@
 plot_rbh(rbh, memb_list, file_name = NA, width = 10, height = 8)
 }
 \arguments{
-\item{rbh}{reciprocal best hits matrix (output of \code{\link[=construct_multi_study_rbh]{construct_multi_study_rbh()}})}
+\item{rbh}{reciprocal best hits matrix (output of
+\code{\link[=construct_multi_rbh_correlation_based]{construct_multi_rbh_correlation_based()}} or
+\code{\link[=construct_multi_rbh_overlap_based]{construct_multi_rbh_overlap_based()}})}
 
 \item{memb_list}{memb_list?}
 

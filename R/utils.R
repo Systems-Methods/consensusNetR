@@ -390,7 +390,7 @@ construct_multi_rbh_overlap_based <- function(network_membership_list,
 #' be unique.
 #'
 #' @param network_membership_list a list containing community membership scores for each
-#' network. Where rownames contain unique gene ids and column names are commuity names
+#' network. Where rownames contain unique gene ids and column names are community names
 #' @param lower_quant indicates the quantile for the minimum correlation
 #' for the reciprocal best hits we will find.
 #' @param upper_quant indicates the quantile for correlations above which
@@ -477,53 +477,12 @@ construct_multi_rbh_correlation_based <- function(network_membership_list,
   return(rbh)
 }
 
-
-#'  Wrapper function multi_rbh_overlap_based or construct_multi_rbh_correlation_based
-#'
-#' @param network_membership_list a list containing community membership scores for each
-#' network. Where rownames contain unique gene ids and column
-#' @param method overlap, pearson, or spearman
-#' @inheritParams construct_multi_rbh_overlap_based
-#' @inheritParams construct_multi_rbh_correlation_based
-#' @return reciprocal best hits matrix between all metagenes across all of the
-#' datasets in the specified files, with dimensions named uniquely based on the
-#' file column names as well as the file names (to ensure uniqueness).
-#' @export
-#'
-#' @details `top_n` and `memb_cut` arguments are used if `method = "overlap"`
-#' and other arguments are used if method is "pearson" or "spearman".
-construct_multi_study_rbh <- function(network_membership_list,
-                                      method = c("overlap", "pearson", "spearman"),
-                                      top_n = 50,
-                                      memb_cut = 0,
-                                      lower_quant = 0,
-                                      upper_quant = 1.0,
-                                      max_rank = 1,
-                                      abs = FALSE,
-                                      sparse = FALSE,
-                                      binary = FALSE){
-  method <- match.arg(method)
-
-  if (method == "overlap") {
-    construct_multi_rbh_overlap_based(network_membership_list,
-                                      top_n,
-                                      memb_cut)
-  } else if (method %in% c("pearson","spearman")) {
-    construct_multi_rbh_correlation_based(network_membership_list,
-                                          method = method,
-                                          lower_quant,
-                                          upper_quant,
-                                          max_rank,
-                                          abs,
-                                          sparse,
-                                          binary)
-  }
-}
-
 ####
 #' RBH Heatmap Creation
 #'
-#' @param rbh reciprocal best hits matrix (output of [construct_multi_study_rbh()])
+#' @param rbh reciprocal best hits matrix (output of
+#' [construct_multi_rbh_correlation_based()] or
+#' [construct_multi_rbh_overlap_based()])
 #' @param memb_list memb_list?
 #' @param file_name File name
 #' @param width figure width

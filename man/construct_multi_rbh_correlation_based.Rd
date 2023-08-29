@@ -17,7 +17,7 @@ construct_multi_rbh_correlation_based(
 }
 \arguments{
 \item{network_membership_list}{a list containing community membership scores for each
-network. Where rownames contain unique gene ids and column names are commuity names}
+network. Where rownames contain unique gene ids and column names are community names}
 
 \item{lower_quant}{indicates the quantile for the minimum correlation
 for the reciprocal best hits we will find.}
