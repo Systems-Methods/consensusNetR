@@ -35,11 +35,17 @@ Imports:
 Suggests:
     aroma.light,
     doMC,
+    dplyr,
+    GEOquery,
     ggplot2,
     hrbrthemes,
+    icWGCNA,
     parallel,
     pheatmap,
-    Rfast
+    purrr,
+    Rfast,
+    UCSCXenaTools
+Remotes: Systems-Methods/icWGCNA
 biocViews:
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
