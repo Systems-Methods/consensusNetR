@@ -153,7 +153,7 @@ memb_list <- list(
 )
 
 # Construct Meta Reciprocal Best Hits based on overlaps
-rbh <- construct_multi_rbh_overlap_based(memb_list,top_n = 25)
+rbh <- construct_rbh_overlap_based(memb_list, top_n = 25)
 
 # RBH Heatmap Creation
 plot_rbh(rbh = rbh, memb_list = memb_list)
@@ -169,10 +169,10 @@ alt="Reciprocal Best Hits Heatmap" />
 
 
 # Detect Communities in Adjacency/Reciprocal Best Hits Matrix
-comms <- detect_metagene_communities(rbh) 
+comms <- detect_consensus_communities(rbh) 
 
 # Compute the average metagene across studies for each community
-consensus_memb  <- compute_mean_meta_genes(
+consensus_memb  <- calc_consensus_memberships(
   consensus = comms,
   network_membership_list = memb_list
 )
