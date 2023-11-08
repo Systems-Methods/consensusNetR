@@ -9,7 +9,9 @@ calc_consensus_memberships(
   network_membership_list,
   weights = NULL,
   gene_cohort_N = 3,
-  compressIntra = "first"
+  compressIntra = "first",
+  remove_misc_comm = TRUE,
+  comm_prefix = "mA"
 )
 }
 \arguments{
@@ -26,6 +28,11 @@ not yet implemented}
 
 \item{compressIntra}{indicates how to deal with multiple metagenes belonging
 to the same community within one study-level network}
+
+\item{remove_misc_comm}{should the miscellaneous community be removed
+(1st community)}
+
+\item{comm_prefix}{the prefix to add to community names}
 }
 \value{
 matrix with average loadings (metagenes) across studies included from
