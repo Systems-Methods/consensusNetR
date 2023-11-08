@@ -9,6 +9,9 @@
 #' @param gene_cohort_N gene_cohort_N
 #' @param compressIntra indicates how to deal with multiple metagenes belonging
 #' to the same community within one study-level network
+#' @param remove_misc_comm should the miscellaneous community be removed
+#' (1st community)
+#' @param comm_prefix the prefix to add to community names
 #'
 #' @return matrix with average loadings (metagenes) across studies included from
 #' network_file_list
@@ -27,10 +30,12 @@
 #' calc_consensus_memberships(comms,ma,network_file_list = network_file_list)
 #' }
 calc_consensus_memberships <- function(consensus,
-                                 network_membership_list,
-                                 weights = NULL,
-                                 gene_cohort_N = 3,
-                                 compressIntra = "first")
+                                       network_membership_list,
+                                       weights = NULL,
+                                       gene_cohort_N = 3,
+                                       compressIntra = "first",
+                                       remove_misc_comm = TRUE,
+                                       comm_prefix = "mA")
 {
 
   n_metagenes <- lapply(network_membership_list, ncol)
@@ -84,7 +89,10 @@ calc_consensus_memberships <- function(consensus,
                                     .fun = compressMetaGenes,
                                     method = "none", w = weights))
   rownames(meanGeneLoadings) <- u_genes
-  colnames(meanGeneLoadings) <- names(clusterLoadings)
+  colnames(meanGeneLoadings) <- paste0(comm_prefix, names(clusterLoadings))
+  if (remove_misc_comm) {
+    meanGeneLoadings <- meanGeneLoadings[,-1]
+  }
   return(meanGeneLoadings)
 }
 
