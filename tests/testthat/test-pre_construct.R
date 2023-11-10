@@ -11,7 +11,7 @@ test_that("calc_cor_of_cor parallel", {
 
 
 test_that("compare_networks works", {
-  expect_snapshot(compare_networks(testing_memb_list[[1]],
-                                   testing_memb_list[[2]]))
+  expect_snapshot(suppressWarnings(compare_networks(testing_memb_list[[1]],
+                                   testing_memb_list[[2]])))
 })
 

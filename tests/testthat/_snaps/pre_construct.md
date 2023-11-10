@@ -15,7 +15,7 @@
 # compare_networks works
 
     Code
-      compare_networks(testing_memb_list[[1]], testing_memb_list[[2]])
+      suppressWarnings(compare_networks(testing_memb_list[[1]], testing_memb_list[[2]]))
     Output
           adjRand cor_of_cor  cor_coph overlap
       1 0.3584286  0.3293828 0.1466221      19

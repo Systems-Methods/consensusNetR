@@ -31,7 +31,7 @@
 
     Code
       detect_consensus_communities(test_rbh)
-    Message <simpleMessage>
+    Message
       Clusters detected
     Output
       $K
