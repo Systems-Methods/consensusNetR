@@ -8,21 +8,25 @@ plot_consensus_eig_dist(
   eigen_list,
   target_study_index = 1,
   filename = NA,
+  device = "png",
   width = 12,
   height = 10,
   dpi = 1000
 )
 }
 \arguments{
-\item{eigen_list}{eigen_list}
+\item{eigen_list}{a list of community signatures (eigengenes) for studies,
+using the output of \code{\link[=calc_consensus_memberships]{calc_consensus_memberships()}} as the \code{membership_matrix}.}
 
 \item{target_study_index}{target_study_index}
 
 \item{filename}{File name}
 
-\item{width}{figure width}
+\item{device}{Device to use. Can either be a device function (e.g. png), or one of "eps", "ps", "tex" (pictex), "pdf", "jpeg", "tiff", "png", "bmp", "svg" or "wmf" (windows only).}
 
-\item{height}{figure height}
+\item{width}{Plot width in units ("in", "cm", "mm", or "px"). If not supplied, uses the size of current graphics device.}
+
+\item{height}{Plot height in units ("in", "cm", "mm", or "px"). If not supplied, uses the size of current graphics device.}
 
 \item{dpi}{Plot resolution. Also accepts a string input: "retina" (320),
 "print" (300), or "screen" (72). Applies only to raster output types.}
@@ -33,4 +37,40 @@ eigengene distributions if \code{filename} is na, and saved figure is
 }
 \description{
 Plot individual eigengene distributions
+}
+\details{
+In icWGCNA \code{eigen_list} is created using
+\href{https://systems-methods.github.io/icWGCNA/reference/compute_eigengene_matrix.html}{icWGCNA::compute_eigengene_matrix()}
+for each study and then combining all outputs into a list.
+}
+\examples{
+\dontrun{
+memb_list <- list(
+  GSE39582 = GSE39582_icwgcna$community_membership,
+  READ = read_icwgcna$community_membership,
+  COAD = coad_icwgcna$community_membership
+)
+ma <- construct_rbh_correlation_based(
+  memb_list,
+  upper_quant = .99,
+  lower_quant = .05,
+  max_rank = 2
+)
+consensus_comms <- detect_consensus_communities(ma)
+consensus_memb <- get_gene_community_membership(consensus_comms, memb_list, 2)
+
+# Need to use icWGCNA for individual eigengenes
+GSE39582_eigen <- icWGCNA::compute_eigengene_matrix(
+                           ex = GSE39582_df,
+                           membership_matrix = consensus_memb)
+read_eigen <- icWGCNA::compute_eigengene_matrix(
+                           ex = read_df,
+                           membership_matrix = consensus_memb)
+coad_eigen <- icWGCNA::compute_eigengene_matrix(
+                           ex = coad_df,
+                           membership_matrix = consensus_memb)
+eigen_list = list(GSE39582_eigen, read_eigen, coad_eigen)
+
+plot_consensus_eig_dist(eigen_list)
+}
 }

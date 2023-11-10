@@ -9,3 +9,20 @@ authors:
     href: https://github.com/wfulp
   Alexandre Alloy:
     href: https://github.com/alexandre-alloy
+
+reference:
+  - title: Pre-construction
+    contents:
+    - calc_cor_of_cor
+    - compare_networks
+  - title: Consensus Network Construction
+    contents:
+    - construct_rbh_overlap_based
+    - construct_rbh_correlation_based
+    - plot_rbh
+    - detect_consensus_communities
+    - calc_consensus_memberships
+  - title: Downstream Functions
+    contents:
+    - get_gene_community_membership
+    - plot_consensus_eig_dist

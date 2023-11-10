@@ -8,7 +8,7 @@ construct_rbh_overlap_based(network_membership_list, top_n = 50, memb_cut = 0)
 }
 \arguments{
 \item{network_membership_list}{a list containing community membership scores for each
-network. Where rownames contain unique gene ids and column names are commuity names}
+network. Where rownames contain unique gene ids and column names are community names}
 
 \item{top_n}{the number of top genes based on membership scores with higher scores
 indicating stronger membership in a community}
@@ -24,4 +24,14 @@ all of the different metagenes across networks in the input list. The
 column/row names will take each networks communities' names and concatenate them
 with the network list names, such that the dimension names are guaranteed to
 be unique.
+}
+\examples{
+\dontrun{
+memb_list <- list(
+  GSE39582 = GSE39582_icwgcna$community_membership,
+  READ = read_icwgcna$community_membership,
+  COAD = coad_icwgcna$community_membership
+)
+ma <- construct_rbh_overlap_based(memb_list)
+}
 }

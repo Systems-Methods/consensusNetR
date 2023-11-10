@@ -5,24 +5,24 @@
 \title{Compute the average metagene across studies for each community}
 \usage{
 calc_consensus_memberships(
-  consensus,
+  consensus_comms,
   network_membership_list,
   weights = NULL,
   gene_cohort_N = 3,
-  compressIntra = "first",
+  compressIntra = c("first", "mean"),
   remove_misc_comm = TRUE,
   comm_prefix = "mA"
 )
 }
 \arguments{
-\item{consensus}{communities output from \code{\link[MCL:mcl]{MCL::mcl()}}, a list containing element
-$Cluster with a vector of the cluster associated with each index.}
+\item{consensus_comms}{communities output from \code{\link[MCL:mcl]{MCL::mcl()}},
+a list containing elements \code{Cluster} with a vector of the cluster
+associated with each index.}
 
 \item{network_membership_list}{a list containing community membership scores for each
 network. Where rownames contain unique gene ids and column names are community names}
 
-\item{weights}{weights for weighted average of based on study attributes,
-not yet implemented}
+\item{weights}{weights for weighted average of based on study attributes}
 
 \item{gene_cohort_N}{gene_cohort_N}
 
@@ -36,21 +36,25 @@ to the same community within one study-level network}
 }
 \value{
 matrix with average loadings (metagenes) across studies included from
-network_file_list
+network_membership_list
 }
 \description{
 Compute the average metagene across studies for each community
 }
 \examples{
 \dontrun{
-network_file_dir <- system.file("extdata", package = "consensusNetR")
-network_file_list <- list.files(network_file_dir, full.names = TRUE)
-ma <- construct_rbh_correlation_based(
-  network_file_list = network_file_list,
-  upper_quant = .99,
-  lower_quant = .05, max_rank = 2
+memb_list <- list(
+  GSE39582 = GSE39582_icwgcna$community_membership,
+  READ = read_icwgcna$community_membership,
+  COAD = coad_icwgcna$community_membership
 )
-comms <- detect_consensus_communities(ma)
-calc_consensus_memberships(comms,ma,network_file_list = network_file_list)
+ma <- construct_rbh_correlation_based(
+  network_membership_list,
+  upper_quant = .99,
+  lower_quant = .05,
+  max_rank = 2
+)
+consensus_comms <- detect_consensus_communities(ma)
+calc_consensus_memberships(consensus_comms,memb_list)
 }
 }

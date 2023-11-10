@@ -5,26 +5,26 @@
 \title{Get Consensus Membership of Genes in Metagene Communities}
 \usage{
 get_gene_community_membership(
-  comms,
-  min_studies,
-  network_file_list = list(),
-  network_file_dir = NULL,
+  consensus_comms,
+  network_membership_list,
+  min_studies = 2,
   include_nonmembers = FALSE,
   compress = TRUE,
   rank_based = TRUE
 )
 }
 \arguments{
-\item{comms}{communities output from MCL::mcl, a list containing element
-$Cluster with a vector of the cluster associated with each index.}
+\item{consensus_comms}{communities output from \code{\link[MCL:mcl]{MCL::mcl()}},
+a list containing elements \code{Cluster} with a vector of the cluster
+associated with each index.}
+
+\item{network_membership_list}{a list containing community membership
+scores for each
+network. Where rownames contain unique gene ids and column names are community names}
 
 \item{min_studies}{the minimum threshold of studies/datasets indicating a
 gene belongs to a community. In a given dataset, a gene "belongs" to a
 community if the gene's highest loading corresponds to that community.}
-
-\item{network_file_list}{network_file_list}
-
-\item{network_file_dir}{network_file_dir}
 
 \item{include_nonmembers}{include_nonmembers
 which do not appear in a community.}
@@ -47,16 +47,18 @@ Get Consensus Membership of Genes in Metagene Communities
 }
 \examples{
 \dontrun{
-network_file_dir <- system.file("extdata", package = "consensusNetR")
-network_file_list <- list.files(network_file_dir, full.names = TRUE)
+memb_list <- list(
+  GSE39582 = GSE39582_icwgcna$community_membership,
+  READ = read_icwgcna$community_membership,
+  COAD = coad_icwgcna$community_membership
+)
 ma <- construct_rbh_correlation_based(
-  network_file_list = network_file_list,
+  memb_list,
   upper_quant = .99,
-  lower_quant = .05, max_rank = 2
+  lower_quant = .05,
+  max_rank = 2
 )
-comms <- detect_consensus_communities(ma)
-consensus <- get_gene_community_membership(comms, 2,
-  network_file_dir = network_file_dir
-)
+consensus_comms <- detect_consensus_communities(ma)
+consensus_memb <- get_gene_community_membership(consensus_comms, memb_list, 2)
 }
 }

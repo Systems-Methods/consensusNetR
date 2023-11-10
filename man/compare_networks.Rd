@@ -5,17 +5,17 @@
 \title{compare_networks}
 \usage{
 compare_networks(
-  net_memb_1,
-  net_memb_2,
+  net_membership_1,
+  net_membership_2,
   K = 75,
   memb_cut = 0.5,
   na_flag = c("none", "both", "either")
 )
 }
 \arguments{
-\item{net_memb_1}{net_memb_1}
+\item{net_membership_1}{net_membership_1}
 
-\item{net_memb_2}{net_memb_2}
+\item{net_membership_2}{net_membership_2}
 
 \item{K}{K}
 
@@ -28,4 +28,10 @@ data.frame: adjRand, cor_of_cor, cor_coph, overlap
 }
 \description{
 compare_networks
+}
+\examples{
+\dontrun{
+compare_networks(GSE39582_icwgcna$community_membership
+                 read_icwgcna$community_membership)
+}
 }

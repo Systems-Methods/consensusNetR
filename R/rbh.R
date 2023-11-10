@@ -9,25 +9,34 @@
 #' be unique.
 #'
 #' @param network_membership_list a list containing community membership scores for each
-#' network. Where rownames contain unique gene ids and column names are commuity names
+#' network. Where rownames contain unique gene ids and column names are community names
 #' @param top_n the number of top genes based on membership scores with higher scores
 #' indicating stronger membership in a community
 #' @param memb_cut membership threshold for stricter thresholding. Only genes with
 #' membership score greater the threshold are used
 #' @export
+#' @examples
+#' \dontrun{
+#' memb_list <- list(
+#'   GSE39582 = GSE39582_icwgcna$community_membership,
+#'   READ = read_icwgcna$community_membership,
+#'   COAD = coad_icwgcna$community_membership
+#' )
+#' ma <- construct_rbh_overlap_based(memb_list)
+#'}
 construct_rbh_overlap_based <- function(network_membership_list,
                                               top_n = 50,
                                               memb_cut = 0) {
   metaStudies <- names(network_membership_list)
   ns          <- sapply(network_membership_list, ncol)
   N           <- sum(ns)
-  comms       <- unlist(sapply(names(network_membership_list),
+  consensus_comms       <- unlist(sapply(names(network_membership_list),
                                function(x){
                                  paste0(x,"_",
                                         colnames(network_membership_list[[x]]))}))
   rbh         <- matrix(0, N,N)
-  colnames(rbh) <- comms
-  rownames(rbh) <- comms;
+  colnames(rbh) <- consensus_comms
+  rownames(rbh) <- consensus_comms;
 
   rbh_metrics <- matrix(NA, choose(length(network_membership_list),2), 5);
   cnt         <- 1
@@ -98,12 +107,18 @@ construct_rbh_overlap_based <- function(network_membership_list,
 #'
 #' @examples
 #' \dontrun{
-#' network_file_dir <- system.file("extdata", package = "consensusNetR")
-#' network_file_list <- list.files(network_file_dir, full.names = TRUE)
-#' ma <- construct_rbh_correlation_based( network_file_list = network_file_list,
-#'   upper_quant = .99, lower_quant = .05, max_rank = 2)
-#'   }
-#'
+#' memb_list <- list(
+#'   GSE39582 = GSE39582_icwgcna$community_membership,
+#'   READ = read_icwgcna$community_membership,
+#'   COAD = coad_icwgcna$community_membership
+#' )
+#' ma <- construct_rbh_correlation_based(
+#'   memb_list,
+#'   upper_quant = .99,
+#'   lower_quant = .05,
+#'   max_rank = 2
+#' )
+#'}
 construct_rbh_correlation_based <- function(network_membership_list,
                                                   lower_quant = 0,
                                                   upper_quant = 1.0,
@@ -113,15 +128,16 @@ construct_rbh_correlation_based <- function(network_membership_list,
                                                   method = "pearson",
                                                   binary = FALSE) {
   metaStudies <- names(network_membership_list)
-  ns          <- sapply(network_membership_list, ncol)
-  N           <- sum(ns)
-  comms       <- unlist(sapply(names(network_membership_list),
-                               function(x){
-                                 paste0(x,"_",
-                                        colnames(network_membership_list[[x]]))}))
-  rbh           <- matrix(0, N,N)
-  colnames(rbh) <- comms
-  rownames(rbh) <- comms;
+  ns <- sapply(network_membership_list, ncol)
+  N  <- sum(ns)
+  consensus_comms <- unlist(sapply(
+    names(network_membership_list),
+    function(x){
+      paste0(x,"_",
+             colnames(network_membership_list[[x]]))}))
+  rbh <- matrix(0, N,N)
+  colnames(rbh) <- consensus_comms
+  rownames(rbh) <- consensus_comms;
 
   rbh_metrics <- matrix(NA, choose(length(network_membership_list),2), 5);
   cnt         <- 1
@@ -136,8 +152,8 @@ construct_rbh_correlation_based <- function(network_membership_list,
       colStop  <- colStart + ns[j] - 1
 
       tempRBH  <- construct_2study_rbh_correlation_based(
-        meta_g1     = network_membership_list[[i]],
-        meta_g2     = network_membership_list[[j]],
+        net_membership_1     = network_membership_list[[i]],
+        net_membership_2     = network_membership_list[[j]],
         lower_quant = lower_quant,
         upper_quant = upper_quant,
         max_rank    = max_rank,
@@ -159,8 +175,8 @@ construct_rbh_correlation_based <- function(network_membership_list,
       cnt <- cnt + 1
     }
   }
-
-  rbh          <- rbh + t(rbh) # contains overlap counts for reciprocal best hits
+  # contains overlap counts for reciprocal best hits
+  rbh          <- rbh + t(rbh)
   return(rbh)
 }
 
@@ -177,28 +193,31 @@ construct_rbh_correlation_based <- function(network_membership_list,
 #'
 #' @return pheatmap object
 #' @export
-#'
+#' @example
+#' \dontrun{
+#' memb_list <- list(
+#'   GSE39582 = GSE39582_icwgcna$community_membership,
+#'   READ = read_icwgcna$community_membership,
+#'   COAD = coad_icwgcna$community_membership
+#' )
+#' ma <- construct_rbh_overlap_based(memb_list)
+#' plot_rbh(ma, memb_list)
+#'}
 plot_rbh <- function(rbh, memb_list, file_name = NA, width = 10, height = 8){
-  needed_packages <- c('pheatmap')
-  missing_packages <- !vapply(needed_packages,
-                              FUN = requireNamespace, quietly = TRUE,
-                              FUN.VALUE = logical(1))
-  if (any(missing_packages)) {
-    stop('Must have the following R packages installed for this function: ',
-         paste0(names(missing_packages[missing_packages]), collapse = ', '))
-  }
+  check_installed('pheatmap')
 
   ns     <- sapply(memb_list, ncol)
   gaps   <- sapply(1:length(ns),function(i){sum(ns[1:i])})
   anns   <- data.frame(Cohorts = gsub("_m.*$","",rownames(rbh)));
   rownames(anns) <- rownames(rbh)
 
-  pheatmap::pheatmap(rbh, cluster_rows = FALSE, cluster_cols = FALSE,
-                     gaps_row = gaps, gaps_col = gaps,
-                     show_rownames = FALSE, show_colnames = FALSE,
-                     annotation_row = anns,
-                     annotation_col = anns,
-                     color = grDevices::colorRampPalette(c("lightgrey","blue","navy"))(50),
-                     filename = file_name , width = width, height = height)
+  pheatmap::pheatmap(
+    rbh, cluster_rows = FALSE, cluster_cols = FALSE,
+    gaps_row = gaps, gaps_col = gaps,
+    show_rownames = FALSE, show_colnames = FALSE,
+    annotation_row = anns,
+    annotation_col = anns,
+    color = grDevices::colorRampPalette(c("lightgrey","blue","navy"))(50),
+    filename = file_name , width = width, height = height)
 }
 

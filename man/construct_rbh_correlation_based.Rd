@@ -54,10 +54,16 @@ be unique.
 }
 \examples{
 \dontrun{
-network_file_dir <- system.file("extdata", package = "consensusNetR")
-network_file_list <- list.files(network_file_dir, full.names = TRUE)
-ma <- construct_rbh_correlation_based( network_file_list = network_file_list,
-  upper_quant = .99, lower_quant = .05, max_rank = 2)
-  }
-
+memb_list <- list(
+  GSE39582 = GSE39582_icwgcna$community_membership,
+  READ = read_icwgcna$community_membership,
+  COAD = coad_icwgcna$community_membership
+)
+ma <- construct_rbh_correlation_based(
+  memb_list,
+  upper_quant = .99,
+  lower_quant = .05,
+  max_rank = 2
+)
+}
 }

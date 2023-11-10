@@ -3,7 +3,7 @@
 #' Performs Markov Clustering on the adjacency matrix, giving the
 #' cluster/community number that each metagene is associated with, renamed so
 #' that the clusters are in order of size (1 being the largest)
-#' @param rbh_mat adjacency/reciprocal best hits matrix, as output by
+#' @param rbh adjacency/reciprocal best hits matrix, as output by
 #' [construct_rbh_correlation_based()]
 #' @param expansion expansion parameter
 #'
@@ -13,33 +13,34 @@
 #'
 #' @examples
 #' \dontrun{
-#' network_file_dir <- system.file("extdata", package = "consensusNetR")
-#' network_file_list <- list.files(network_file_dir, full.names = TRUE)
-#' ma <- construct_rbh_correlation_based(
-#'   network_file_list = network_file_list,
-#'   upper_quant = .99,``
-#'   lower_quant = .05, max_rank = 2
+#' Create list of community_membership object
+#' memb_list <- list(
+#'   GSE39582 = GSE39582_icwgcna$community_membership,
+#'   READ = read_icwgcna$community_membership,
+#'   COAD = coad_icwgcna$community_membership
 #' )
-#' comms <- detect_consensus_communities(ma)
+#' ma <- construct_rbh_correlation_based(
+#'   memb_list,
+#'   upper_quant = .99,
+#'   lower_quant = .05,
+#'   max_rank = 2
+#' )
+#' consensus_comms <- detect_consensus_communities(ma)
 #' }
-detect_consensus_communities <- function(rbh_mat,
+detect_consensus_communities <- function(rbh,
                                         expansion = 2) {
 
-  comms <- MCL::mcl(rbh_mat,
+  consensus_comms <- MCL::mcl(rbh,
                     addLoops = TRUE,
                     allow1 = FALSE,
                     expansion = expansion)
 
-  if (length(grep('Error', rbh_mat)) > 0) {
-    stop('rbh_mat could not be transformed into an equilibrium state matrix. Set expansion parameter to a higher value than 2.')
-  }
-
-  cat("Clusters detected\n")
-  mapping_list <- as.list(seq_len(length(unique(comms$Cluster))))
-  names(mapping_list) <- names(sort(table(comms$Cluster),
+  message("Clusters detected")
+  mapping_list <- as.list(seq_len(length(unique(consensus_comms$Cluster))))
+  names(mapping_list) <- names(sort(table(consensus_comms$Cluster),
                                     decreasing = TRUE))
 
-  comms$Cluster <- as.vector(unlist(mapping_list[as.character(comms$Cluster)]))
-  return(comms)
+  consensus_comms$Cluster <- as.vector(unlist(mapping_list[as.character(consensus_comms$Cluster)]))
+  return(consensus_comms)
 }
 

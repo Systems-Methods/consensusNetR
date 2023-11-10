@@ -7,10 +7,10 @@
 calc_cor_of_cor(ex_list)
 }
 \arguments{
-\item{ex_list}{expression datasets}
+\item{ex_list}{list of expression datasets}
 }
 \value{
-cor_of_cors
+correlations of correlations
 }
 \description{
 Computing cor of cor between study expression data

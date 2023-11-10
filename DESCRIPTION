@@ -23,30 +23,32 @@ BugReports: https://github.com/Systems-Methods/consensusNetR/issues
 Depends: 
     R (>= 3.5)
 Imports:
-    data.table,
-    dendextend,
-    DescTools,
+    foreach,
     Matrix,
     MCL,
-    mclust,
     rlang,
-    plyr,
-    tidyr
+    plyr
 Suggests:
     aroma.light,
-    doMC,
+    dendextend,
+    DescTools,
     dplyr,
     GEOquery,
     ggplot2,
     hrbrthemes,
     icWGCNA,
-    parallel,
+    mclust,
     pheatmap,
     purrr,
     Rfast,
-    UCSCXenaTools
+    testthat (>= 3.0.0),
+    tidyr,
+    UCSCXenaTools,
+    withr
 Remotes: Systems-Methods/icWGCNA
 biocViews:
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+Config/testthat/edition: 3
+Config/testthat/parallel: true

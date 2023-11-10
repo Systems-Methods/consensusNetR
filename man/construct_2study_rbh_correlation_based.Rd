@@ -5,8 +5,8 @@
 \title{Compute correlation based RBH for Two Metagene Datasets}
 \usage{
 construct_2study_rbh_correlation_based(
-  meta_g1,
-  meta_g2,
+  net_membership_1,
+  net_membership_2,
   lower_quant = 0,
   upper_quant = 1,
   max_rank = 1,
@@ -16,9 +16,9 @@ construct_2study_rbh_correlation_based(
 )
 }
 \arguments{
-\item{meta_g1, meta_g2}{metagene matrices from two different datasets. Row
-names of these matrices must be gene names, and the column names should be
-unique metagene names.}
+\item{net_membership_1}{community membership matrix from first network.}
+
+\item{net_membership_2}{community membership matrix from second network.}
 
 \item{lower_quant}{indicates the quantile for the minimum correlation
 for the reciprocal best hits we will find.}
@@ -36,8 +36,8 @@ reciprocal best hits network. Pure reciprocal best hits uses max_rank of 1.}
 \item{method}{string, same as \code{\link[stats:cor]{stats::cor()}}}
 }
 \value{
-Matrix with rows matching the columns in meta_g1 and columns
-matching the columns of meta_g2, with values 1 indicating two metagenes are a
+Matrix with rows matching the columns in net_membership_1 and columns
+matching the columns of net_membership_2, with values 1 indicating two metagenes are a
 hit, and 0 indicating that they are not.
 }
 \description{
@@ -47,29 +47,13 @@ be intersected to get common rows.
 }
 \details{
 If one wants the reciprocal best hits network to have separate dimension
-names for rows and columns, the column names for meta_g1 and meta_g2 should
+names for rows and columns, the column names for net_membership_1 and net_membership_2 should
 be distinct.
 }
 \examples{
 \dontrun{
-network_file_dir <- system.file("extdata", package = "consensusNetR")
-network_file_list <- list.files(network_file_dir, full.names = TRUE)
-ds1 <- as.matrix(data.table::fread(network_file_list[[1]]))
-row.names(ds1) <- ds1[, 1]
-ds1 <- ds1[, -1]
-colnames(ds1) <- paste0(colnames(ds1), sub(
-  ".*/", "",
-  network_file_list[[1]]
-))
-
-ds2 <- as.matrix(data.table::fread(network_file_list[[2]]))
-row.names(ds2) <- ds2[, 1]
-ds2 <- ds2[, -1]
-colnames(ds2) <- paste0(colnames(ds2), sub(
-  ".*/", "",
-  network_file_list[[2]]
-))
-rbh <- construct_2study_rbh_correlation_based(ds1, ds2)
+rbh <- construct_2study_rbh_correlation_based(
+              GSE39582_icwgcna$community_membership,
+              read_icwgcna$community_membership)
 }
-
 }
