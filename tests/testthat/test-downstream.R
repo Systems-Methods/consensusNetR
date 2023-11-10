@@ -26,10 +26,13 @@ test_that("plot_consensus_eig_dist defaults", {
       testing_ex_list$COAD, test_consensus_memb)
   ))
 
-  expect_snapshot_file(
-    save_png(plot_consensus_eig_dist(eigen_list)),
-    "plot_consensus_eig_dist.png"
-  )
+  # only tested exact figure in Mac OS
+  if (Sys.info()["sysname"] == "Darwin") {
+    expect_snapshot_file(
+      save_png(plot_consensus_eig_dist(eigen_list)),
+      "plot_consensus_eig_dist.png"
+    )
+  }
   expect_no_error(
     plot_consensus_eig_dist(
       eigen_list,

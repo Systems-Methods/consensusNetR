@@ -59,6 +59,6 @@ ma <- construct_rbh_correlation_based(
   max_rank = 2
 )
 consensus_comms <- detect_consensus_communities(ma)
-consensus_memb <- get_gene_community_membership(consensus_comms, memb_list, 2)
+consensus_genes <- get_gene_community_membership(consensus_comms, memb_list, 2)
 }
 }
