@@ -15,3 +15,14 @@ correlations of correlations
 \description{
 Computing cor of cor between study expression data
 }
+\examples{
+\dontrun{
+ex_list <- list(
+  GSE39582 = GSE39582_df,
+  READ = read_df,
+  COAD = coad_df
+)
+
+calc_cor_of_cor(ex_list)
+}
+}

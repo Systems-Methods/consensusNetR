@@ -193,7 +193,7 @@ construct_rbh_correlation_based <- function(network_membership_list,
 #'
 #' @return pheatmap object
 #' @export
-#' @example
+#' @examples
 #' \dontrun{
 #' memb_list <- list(
 #'   GSE39582 = GSE39582_icwgcna$community_membership,

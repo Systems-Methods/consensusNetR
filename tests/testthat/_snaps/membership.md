@@ -1,7 +1,7 @@
 # get_gene_community_membership works
 
     Code
-      get_gene_community_membership(test_consensus, testing_memb_list)
+      get_gene_community_membership(testing_consensus_comms, testing_memb_list)
     Message
       loading GSE39582
       loading READ

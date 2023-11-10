@@ -93,6 +93,12 @@ memb_list <- list(
 saveRDS(memb_list,
         file = testthat::test_path("fixtures","memb_list.rds"))
 
+rbh <- suppressMessages(construct_rbh_overlap_based(memb_list))
+consensus_comms <- suppressMessages(detect_consensus_communities(rbh))
+
+saveRDS(consensus_comms,
+        file = testthat::test_path("fixtures","consensus_comms.rds"))
+
 # Getting ex subset
 
 GSE39582_sub <- GSE39582_hugo[gene_subset, ] |>
@@ -121,5 +127,6 @@ eigen_list <- list(
 
 saveRDS(eigen_list,
         file = testthat::test_path("fixtures","eigen_list.rds"))
+
 
 

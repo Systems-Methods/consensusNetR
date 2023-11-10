@@ -6,7 +6,7 @@
 #' @importFrom foreach getDoParName
 #' @export
 #'
-#' @example
+#' @examples
 #' \dontrun{
 #' ex_list <- list(
 #'   GSE39582 = GSE39582_df,

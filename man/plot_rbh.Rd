@@ -25,3 +25,14 @@ pheatmap object
 \description{
 RBH Heatmap Creation
 }
+\examples{
+\dontrun{
+memb_list <- list(
+  GSE39582 = GSE39582_icwgcna$community_membership,
+  READ = read_icwgcna$community_membership,
+  COAD = coad_icwgcna$community_membership
+)
+ma <- construct_rbh_overlap_based(memb_list)
+plot_rbh(ma, memb_list)
+}
+}

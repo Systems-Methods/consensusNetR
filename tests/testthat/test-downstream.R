@@ -9,10 +9,8 @@ test_that("plot_consensus_eig_dist defaults", {
     path
   }
 
-  test_rbh <- suppressMessages(construct_rbh_overlap_based(testing_memb_list))
-  test_consensus_comms <- suppressMessages(detect_consensus_communities(test_rbh))
   test_consensus_memb <- suppressMessages(calc_consensus_memberships(
-    test_consensus_comms,
+    testing_consensus_comms,
     testing_memb_list,
     gene_cohort_N = 2)
   )
