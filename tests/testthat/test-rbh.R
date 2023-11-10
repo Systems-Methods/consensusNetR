@@ -16,18 +16,22 @@ test_that("rbh correlation other params", {
 })
 
 test_that("plot rbh defaults", {
-  save_png <- function(code, width = 400, height = 400) {
-    path <- withr::local_tempfile(fileext = ".png")
-    png(path, width = width, height = height)
-    on.exit(dev.off())
-    code
+  # only tested exact figure in Mac OS
+  if (Sys.info()["sysname"] == "Darwin") {
 
-    path
+    save_png <- function(code, width = 400, height = 400) {
+      path <- withr::local_tempfile(fileext = ".png")
+      png(path, width = width, height = height)
+      on.exit(dev.off())
+      code
+
+      path
+    }
+
+    test_rbh <- suppressMessages(construct_rbh_overlap_based(testing_memb_list))
+    expect_snapshot_file(
+      save_png(plot_rbh(test_rbh, testing_memb_list)),
+      "plot_rbh.png"
+    )
   }
-
-  test_rbh <- suppressMessages(construct_rbh_overlap_based(testing_memb_list))
-  expect_snapshot_file(
-    save_png(plot_rbh(test_rbh, testing_memb_list)),
-    "plot_rbh.png"
-  )
 })

@@ -11,10 +11,7 @@ test_that("calc_cor_of_cor parallel", {
 
 
 test_that("compare_networks works", {
-  # only tested exact figure in Mac OS
-  if (Sys.info()["sysname"] == "Darwin") {
-    expect_snapshot(compare_networks(testing_memb_list[[1]],
-                                     testing_memb_list[[2]]))
-  }
+  expect_snapshot(compare_networks(testing_memb_list[[1]],
+                                   testing_memb_list[[2]]))
 })
 
