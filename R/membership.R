@@ -55,9 +55,11 @@ get_gene_community_membership <- function(consensus_comms,
     rank_based = TRUE
   )
   message("Gene cluster map completed")
-  get_consensus_mem_from_votes(gene_cluster_map,
-                                      min_studies,
-                                      include_nonmembers)
+  get_consensus_mem_from_votes(
+    gene_cluster_map,
+    min_studies,
+    include_nonmembers
+  )
 }
 
 
@@ -69,9 +71,10 @@ get_consensus_mem_from_votes <- function(gene_cluster_votes,
     function(row_num) {
       gene_id <- row.names(gene_cluster_votes)[row_num]
       counts <- table(gene_cluster_votes[row_num, ])
-      clusters <- paste(names(counts)[which(counts == max(counts) &
-                                              counts >= min_studies)],
-                        collapse = ";"
+      clusters <- paste(
+        names(counts)[which(counts == max(counts) &
+          counts >= min_studies)],
+        collapse = ";"
       )
       n_studies <- max(counts)
       if (nchar(clusters) == 0 & !include_nonmembers) {
@@ -81,7 +84,8 @@ get_consensus_mem_from_votes <- function(gene_cluster_votes,
         gene_id = gene_id, cluster = clusters,
         n_studies = n_studies
       ))
-    })
+    }
+  )
   return(do.call(rbind, consensus_list))
 }
 
@@ -90,7 +94,6 @@ get_gene_map_per_dataset <- function(consensus_comms,
                                      n_metagenes,
                                      compress = TRUE,
                                      rank_based = TRUE) {
-
   gene_ids <- unique(unlist(lapply(network_membership_list, rownames)))
 
   ents_clusts <- matrix(NA, length(gene_ids), ncol = length(network_membership_list))
@@ -105,15 +108,15 @@ get_gene_map_per_dataset <- function(consensus_comms,
     message("loading ", names(network_membership_list)[i])
     network <- network_membership_list[[i]]
     if (compress) {
-      #this works under assumption that the first unique metagene is the one to keep.
+      # this works under assumption that the first unique metagene is the one to keep.
       keep_inds <- !duplicated(loc_comm)
-      loc_comm  <- loc_comm[keep_inds]
-      network   <- network[,keep_inds]
+      loc_comm <- loc_comm[keep_inds]
+      network <- network[, keep_inds]
     }
     # For each gene in the i-th network, find the cluster with the highest
     # loading for that gene
     if (rank_based) {
-      network <- -apply(-network,2,rank)
+      network <- -apply(-network, 2, rank)
     }
     mod <- apply(network, 1, function(x) {
       which(x == max(x, na.rm = TRUE))[1]

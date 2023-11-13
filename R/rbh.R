@@ -23,33 +23,38 @@
 #'   COAD = coad_icwgcna$community_membership
 #' )
 #' ma <- construct_rbh_overlap_based(memb_list)
-#'}
+#' }
 construct_rbh_overlap_based <- function(network_membership_list,
-                                              top_n = 50,
-                                              memb_cut = 0) {
+                                        top_n = 50,
+                                        memb_cut = 0) {
   metaStudies <- names(network_membership_list)
-  ns          <- sapply(network_membership_list, ncol)
-  N           <- sum(ns)
-  consensus_comms       <- unlist(sapply(names(network_membership_list),
-                               function(x){
-                                 paste0(x,"_",
-                                        colnames(network_membership_list[[x]]))}))
-  rbh         <- matrix(0, N,N)
+  ns <- sapply(network_membership_list, ncol)
+  N <- sum(ns)
+  consensus_comms <- unlist(sapply(
+    names(network_membership_list),
+    function(x) {
+      paste0(
+        x, "_",
+        colnames(network_membership_list[[x]])
+      )
+    }
+  ))
+  rbh <- matrix(0, N, N)
   colnames(rbh) <- consensus_comms
-  rownames(rbh) <- consensus_comms;
+  rownames(rbh) <- consensus_comms
 
-  rbh_metrics <- matrix(NA, choose(length(network_membership_list),2), 5);
-  cnt         <- 1
+  rbh_metrics <- matrix(NA, choose(length(network_membership_list), 2), 5)
+  cnt <- 1
 
   for (i in 1:(length(network_membership_list) - 1))
   {
     for (j in (i + 1):length(network_membership_list))
     {
       rowStart <- sum(ns[(1:i) - 1]) + 1
-      rowStop  <- rowStart + ns[i] - 1
+      rowStop <- rowStart + ns[i] - 1
       colStart <- sum(ns[(1:j) - 1]) + 1
-      colStop  <- colStart + ns[j] - 1
-      tempRBH  <- construct_2study_rbh_overlap_based(
+      colStop <- colStart + ns[j] - 1
+      tempRBH <- construct_2study_rbh_overlap_based(
         network_membership_list[[i]],
         network_membership_list[[j]],
         top_n = top_n,
@@ -57,21 +62,25 @@ construct_rbh_overlap_based <- function(network_membership_list,
       )
 
       rbh[rowStart:rowStop, colStart:colStop] <- tempRBH
-      message(metaStudies[i],": ",
-              ncol(network_membership_list[[i]]),
-              " coms, ", metaStudies[j],": ",
-              ncol(network_membership_list[[j]]), " coms, RBH: ",
-              sum(apply(tempRBH > 0,1,sum))," coms")
-      rbh_metrics[cnt, ] <- c(metaStudies[i],
-                              metaStudies[i],
-                              ncol(network_membership_list[[i]]),
-                              ncol(network_membership_list[[j]]),
-                              sum(apply(tempRBH > 0,1,sum)))
+      message(
+        metaStudies[i], ": ",
+        ncol(network_membership_list[[i]]),
+        " coms, ", metaStudies[j], ": ",
+        ncol(network_membership_list[[j]]), " coms, RBH: ",
+        sum(apply(tempRBH > 0, 1, sum)), " coms"
+      )
+      rbh_metrics[cnt, ] <- c(
+        metaStudies[i],
+        metaStudies[i],
+        ncol(network_membership_list[[i]]),
+        ncol(network_membership_list[[j]]),
+        sum(apply(tempRBH > 0, 1, sum))
+      )
       cnt <- cnt + 1
     }
   }
 
-  rbh          <- rbh + t(rbh) # contains overlap counts for reciprical best hits
+  rbh <- rbh + t(rbh) # contains overlap counts for reciprical best hits
   return(rbh)
 }
 
@@ -118,65 +127,74 @@ construct_rbh_overlap_based <- function(network_membership_list,
 #'   lower_quant = .05,
 #'   max_rank = 2
 #' )
-#'}
+#' }
 construct_rbh_correlation_based <- function(network_membership_list,
-                                                  lower_quant = 0,
-                                                  upper_quant = 1.0,
-                                                  max_rank = 1,
-                                                  abs = FALSE,
-                                                  sparse = FALSE,
-                                                  method = "pearson",
-                                                  binary = FALSE) {
+                                            lower_quant = 0,
+                                            upper_quant = 1.0,
+                                            max_rank = 1,
+                                            abs = FALSE,
+                                            sparse = FALSE,
+                                            method = "pearson",
+                                            binary = FALSE) {
   metaStudies <- names(network_membership_list)
   ns <- sapply(network_membership_list, ncol)
-  N  <- sum(ns)
+  N <- sum(ns)
   consensus_comms <- unlist(sapply(
     names(network_membership_list),
-    function(x){
-      paste0(x,"_",
-             colnames(network_membership_list[[x]]))}))
-  rbh <- matrix(0, N,N)
+    function(x) {
+      paste0(
+        x, "_",
+        colnames(network_membership_list[[x]])
+      )
+    }
+  ))
+  rbh <- matrix(0, N, N)
   colnames(rbh) <- consensus_comms
-  rownames(rbh) <- consensus_comms;
+  rownames(rbh) <- consensus_comms
 
-  rbh_metrics <- matrix(NA, choose(length(network_membership_list),2), 5);
-  cnt         <- 1
+  rbh_metrics <- matrix(NA, choose(length(network_membership_list), 2), 5)
+  cnt <- 1
 
   for (i in 1:(length(network_membership_list) - 1))
   {
     for (j in (i + 1):length(network_membership_list))
     {
       rowStart <- sum(ns[(1:i) - 1]) + 1
-      rowStop  <- rowStart + ns[i] - 1
+      rowStop <- rowStart + ns[i] - 1
       colStart <- sum(ns[(1:j) - 1]) + 1
-      colStop  <- colStart + ns[j] - 1
+      colStop <- colStart + ns[j] - 1
 
-      tempRBH  <- construct_2study_rbh_correlation_based(
-        net_membership_1     = network_membership_list[[i]],
-        net_membership_2     = network_membership_list[[j]],
+      tempRBH <- construct_2study_rbh_correlation_based(
+        net_membership_1 = network_membership_list[[i]],
+        net_membership_2 = network_membership_list[[j]],
         lower_quant = lower_quant,
         upper_quant = upper_quant,
-        max_rank    = max_rank,
-        abs         = abs,
-        sparse      = sparse,
-        method      = method)
+        max_rank = max_rank,
+        abs = abs,
+        sparse = sparse,
+        method = method
+      )
 
       rbh[rowStart:rowStop, colStart:colStop] <- tempRBH
-      message(metaStudies[i],": ",
-              ncol(network_membership_list[[i]]),
-              " coms, ", metaStudies[j],": ",
-              ncol(network_membership_list[[j]]), " coms, RBH: ",
-              sum(apply(tempRBH > 0,1,sum))," coms")
-      rbh_metrics[cnt, ] <- c(metaStudies[i],
-                              metaStudies[i],
-                              ncol(network_membership_list[[i]]),
-                              ncol(network_membership_list[[j]]),
-                              sum(apply(tempRBH > 0,1,sum)))
+      message(
+        metaStudies[i], ": ",
+        ncol(network_membership_list[[i]]),
+        " coms, ", metaStudies[j], ": ",
+        ncol(network_membership_list[[j]]), " coms, RBH: ",
+        sum(apply(tempRBH > 0, 1, sum)), " coms"
+      )
+      rbh_metrics[cnt, ] <- c(
+        metaStudies[i],
+        metaStudies[i],
+        ncol(network_membership_list[[i]]),
+        ncol(network_membership_list[[j]]),
+        sum(apply(tempRBH > 0, 1, sum))
+      )
       cnt <- cnt + 1
     }
   }
   # contains overlap counts for reciprocal best hits
-  rbh          <- rbh + t(rbh)
+  rbh <- rbh + t(rbh)
   return(rbh)
 }
 
@@ -202,22 +220,25 @@ construct_rbh_correlation_based <- function(network_membership_list,
 #' )
 #' ma <- construct_rbh_overlap_based(memb_list)
 #' plot_rbh(ma, memb_list)
-#'}
-plot_rbh <- function(rbh, memb_list, file_name = NA, width = 10, height = 8){
-  check_installed('pheatmap')
+#' }
+plot_rbh <- function(rbh, memb_list, file_name = NA, width = 10, height = 8) {
+  check_installed("pheatmap")
 
-  ns     <- sapply(memb_list, ncol)
-  gaps   <- sapply(1:length(ns),function(i){sum(ns[1:i])})
-  anns   <- data.frame(Cohorts = gsub("_m.*$","",rownames(rbh)));
+  ns <- sapply(memb_list, ncol)
+  gaps <- sapply(1:length(ns), function(i) {
+    sum(ns[1:i])
+  })
+  anns <- data.frame(Cohorts = gsub("_m.*$", "", rownames(rbh)))
   rownames(anns) <- rownames(rbh)
 
   pheatmap::pheatmap(
-    rbh, cluster_rows = FALSE, cluster_cols = FALSE,
+    rbh,
+    cluster_rows = FALSE, cluster_cols = FALSE,
     gaps_row = gaps, gaps_col = gaps,
     show_rownames = FALSE, show_colnames = FALSE,
     annotation_row = anns,
     annotation_col = anns,
-    color = grDevices::colorRampPalette(c("lightgrey","blue","navy"))(50),
-    filename = file_name , width = width, height = height)
+    color = grDevices::colorRampPalette(c("lightgrey", "blue", "navy"))(50),
+    filename = file_name, width = width, height = height
+  )
 }
-

@@ -6,10 +6,11 @@ test_that("fisherZ check", {
 test_that("check_installed", {
   local_mocked_bindings(is_installed = function(package) FALSE)
   expect_error(
-    check_installed('weird_pkg'),
-    "Must have the following R packages installed for this function: weird_pkg")
+    check_installed("weird_pkg"),
+    "Must have the following R packages installed for this function: weird_pkg"
+  )
   expect_error(
-    check_installed('stats'),
-    "Must have the following R packages installed for this function: stats")
+    check_installed("stats"),
+    "Must have the following R packages installed for this function: stats"
+  )
 })
-

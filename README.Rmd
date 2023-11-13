@@ -9,7 +9,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%", 
+  out.width = "100%",
   eval = FALSE
 )
 ```
@@ -38,7 +38,7 @@ or:
 ```{r}
 remotes::install_git(
   "https://github.com/Systems-Methods/consensusNetR"
-  )
+)
 ```
 
 
@@ -57,7 +57,6 @@ alternative methods work as well (KNN, PCA, ICA, WGCNA). See
 ## Consensus construction
 
 ```{r Consensus-construction}
-
 # Create list of community_membership object
 memb_list <- list(
   GSE39582 = GSE39582_icwgcna$community_membership,
@@ -70,42 +69,40 @@ rbh <- construct_rbh_overlap_based(memb_list, top_n = 25)
 
 # RBH Heatmap Creation
 plot_rbh(rbh = rbh, memb_list = memb_list)
-
 ```
 
 ![Reciprocal Best Hits Heatmap](man/figures/README-RBH-1.png)
 
 
 ```{r Consensus-construction2}
-
 # Detect Communities in Adjacency/Reciprocal Best Hits Matrix
-consensus_comms <- detect_consensus_communities(rbh) 
+consensus_comms <- detect_consensus_communities(rbh)
 
 # Compute the average metagene across studies for each community
-consensus_memb  <- calc_consensus_memberships(consensus_comms, memb_list)
-
+consensus_memb <- calc_consensus_memberships(consensus_comms, memb_list)
 ```
 
 ## Downstream Analysis
 
 ```{r Downstream-Analysis}
-
 consensus_genes <- get_gene_community_membership(consensus_comms, memb_list, 2)
 
 # Need to use icWGCNA for individual eigengenes
 GSE39582_eigen <- icWGCNA::compute_eigengene_matrix(
-                          ex = GSE39582_df,
-                          membership_matrix = consensus_memb)
+  ex = GSE39582_df,
+  membership_matrix = consensus_memb
+)
 read_eigen <- icWGCNA::compute_eigengene_matrix(
-                          ex = read_df,
-                          membership_matrix = consensus_memb)
+  ex = read_df,
+  membership_matrix = consensus_memb
+)
 coad_eigen <- icWGCNA::compute_eigengene_matrix(
-                          ex = coad_df,
-                          membership_matrix = consensus_memb)
+  ex = coad_df,
+  membership_matrix = consensus_memb
+)
 
-eigen_list = list(GSE39582_eigen, read_eigen, coad_eigen)
+eigen_list <- list(GSE39582_eigen, read_eigen, coad_eigen)
 plot_consensus_eig_dist(eigen_list)
-
 ```
 
 ## Example Appendix 
@@ -117,7 +114,6 @@ to gene symbols, by using the `icWGCNA::gene_mapping()` function. This matches
 with the two TCGA datasets already in gene symbols.
 
 ```{r downloading-data}
-
 library(icWGCNA)
 
 # GSE39582
@@ -126,23 +122,22 @@ GSE39582 <- GEOquery::getGEO("GSE39582")
 # TCGA READ
 UCSCXenaTools::getTCGAdata(
   project = "READ",
-  mRNASeq = TRUE, 
+  mRNASeq = TRUE,
   mRNASeqType = "normalized",
-  clinical = TRUE, 
-  download = TRUE, 
+  clinical = TRUE,
+  download = TRUE,
   destdir = "/MY_PATH/data/"
 )
 
 # TCGA COAD
 UCSCXenaTools::getTCGAdata(
   project = "COAD",
-  mRNASeq = TRUE, 
+  mRNASeq = TRUE,
   mRNASeqType = "normalized",
-  clinical = TRUE, 
-  download = TRUE, 
+  clinical = TRUE,
+  download = TRUE,
   destdir = "/MY_PATH/data/"
 )
-
 ```
 
 </details>
@@ -154,24 +149,22 @@ Ensembl, ...). In this example we will convert GSE39582 to gene symbols using
 the [icWGCNA::gene_mapping()](https://systems-methods.github.io/icWGCNA/reference/gene_mapping.html) function.
 
 ```{r gene-mapping}
-
 # creating annotation file for gene mapping to gene symbols
 GSE39582_annotation <- GSE39582@featureData@data |>
-  dplyr::select(ID, gene_symbol = `Gene Symbol`) |>  
+  dplyr::select(ID, gene_symbol = `Gene Symbol`) |>
   dplyr::mutate(
     gene_symbol = purrr::map(
       gene_symbol, ~ stringr::str_split(.x, " /// ")[[1]]
     )
-  ) %>% 
+  ) %>%
   tidyr::unnest(gene_symbol)
 
 GSE39582_hugo <- icWGCNA::gene_mapping(
-  GSE39582@assayData$exprs, 
-  GSE39582_annotation, 
-  compress_fun = "highest_mean", 
+  GSE39582@assayData$exprs,
+  GSE39582_annotation,
+  compress_fun = "highest_mean",
   compress_trans = "log_exp"
 )
-
 ```
 
 All data should be normalized, however in this example we downloaded the 
@@ -187,7 +180,6 @@ demonstration purposes. These runs benefit greatly by using multiple
 computer cores.
 
 ```{r icWGCNA}
-
 # GSE39582
 GSE39582_icwgcna <- icWGCNA::icwgcna(GSE39582_hugo, maxIt = 5)
 
@@ -196,7 +188,6 @@ read_icwgcna <- icWGCNA::icwgcna(read_df, maxIt = 5)
 
 # TCGA COAD
 coad_icwgcna <- icWGCNA::icwgcna(coad_df, maxIt = 5)
-
 ```
 
 </details>

@@ -35,7 +35,8 @@ vocabulary, so that they can be intersected to get common rows.
 \examples{
 \dontrun{
 rbh <- construct_2study_rbh_overlap_based(
-              GSE39582_icwgcna$community_membership,
-              read_icwgcna$community_membership)
+  GSE39582_icwgcna$community_membership,
+  read_icwgcna$community_membership
+)
 }
 }

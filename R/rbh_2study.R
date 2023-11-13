@@ -14,8 +14,9 @@
 #' @examples
 #' \dontrun{
 #' rbh <- construct_2study_rbh_overlap_based(
-#'               GSE39582_icwgcna$community_membership,
-#'               read_icwgcna$community_membership)
+#'   GSE39582_icwgcna$community_membership,
+#'   read_icwgcna$community_membership
+#' )
 #' }
 construct_2study_rbh_overlap_based <- function(net_membership_1,
                                                net_membership_2,
@@ -23,42 +24,58 @@ construct_2study_rbh_overlap_based <- function(net_membership_1,
                                                memb_cut = 0) {
   ret <- matrix(0, ncol(net_membership_1), ncol(net_membership_2))
   net_membership_1 <- net_membership_1[rownames(net_membership_1) %in%
-                                         rownames(net_membership_2),]
-  net_membership_2 <- net_membership_2[match(rownames(net_membership_1),
-                                             rownames(net_membership_2)),]
-  rankX <- apply(apply(-net_membership_1,2,rank) <= top_n &
-                   net_membership_1 >= memb_cut,
-                 2, as.numeric)
-  rankY <- apply(apply(-net_membership_2,2,rank) <= top_n &
-                   net_membership_2 >= memb_cut,
-                 2, as.numeric)
+    rownames(net_membership_2), ]
+  net_membership_2 <- net_membership_2[match(
+    rownames(net_membership_1),
+    rownames(net_membership_2)
+  ), ]
+  rankX <- apply(
+    apply(-net_membership_1, 2, rank) <= top_n &
+      net_membership_1 >= memb_cut,
+    2, as.numeric
+  )
+  rankY <- apply(
+    apply(-net_membership_2, 2, rank) <= top_n &
+      net_membership_2 >= memb_cut,
+    2, as.numeric
+  )
 
   overlap <- t(rankX) %*% rankY
-  x2y <- plyr::alply(overlap, 1,
-                     function(x) {
-                       ret <- which(x == max(x) & x != 0);
-                       if (length(ret) == 0) {
-                         return(NA)
-                       } else {
-                         return(ret[1])
-                       }})
-  y2x <- plyr::alply(overlap, 2,
-                     function(x) {
-                       ret <- which(x == max(x) & x != 0)
-                       if (length(ret) == 0) {
-                         return(NA)
-                       } else {
-                         return(ret[1])
-                       }})
-  x2y <- data.frame(x2yName = as.numeric(names(x2y)),
-                    x2yMap = unlist(x2y))
-  y2x <- data.frame(y2xName = as.numeric(names(y2x)),
-                    y2xMap = unlist(y2x))
-  y2x <- y2x[match(x2y$x2yMap,y2x$y2xName),]
+  x2y <- plyr::alply(
+    overlap, 1,
+    function(x) {
+      ret <- which(x == max(x) & x != 0)
+      if (length(ret) == 0) {
+        return(NA)
+      } else {
+        return(ret[1])
+      }
+    }
+  )
+  y2x <- plyr::alply(
+    overlap, 2,
+    function(x) {
+      ret <- which(x == max(x) & x != 0)
+      if (length(ret) == 0) {
+        return(NA)
+      } else {
+        return(ret[1])
+      }
+    }
+  )
+  x2y <- data.frame(
+    x2yName = as.numeric(names(x2y)),
+    x2yMap = unlist(x2y)
+  )
+  y2x <- data.frame(
+    y2xName = as.numeric(names(y2x)),
+    y2xMap = unlist(y2x)
+  )
+  y2x <- y2x[match(x2y$x2yMap, y2x$y2xName), ]
 
-  edges <- as.matrix(x2y[which(x2y$x2yName == y2x$y2xMap),])
+  edges <- as.matrix(x2y[which(x2y$x2yName == y2x$y2xMap), ])
   ret[edges] <- overlap[edges]
-  ret/top_n
+  ret / top_n
 }
 
 
@@ -83,8 +100,9 @@ construct_2study_rbh_overlap_based <- function(net_membership_1,
 #' @examples
 #' \dontrun{
 #' rbh <- construct_2study_rbh_correlation_based(
-#'               GSE39582_icwgcna$community_membership,
-#'               read_icwgcna$community_membership)
+#'   GSE39582_icwgcna$community_membership,
+#'   read_icwgcna$community_membership
+#' )
 #' }
 construct_2study_rbh_correlation_based <- function(
     net_membership_1,
@@ -95,12 +113,13 @@ construct_2study_rbh_correlation_based <- function(
     abs = FALSE,
     sparse = FALSE,
     method = "pearson") {
-
   # Filter for rows with common gene names
   net_membership_1 <- stats::na.omit(net_membership_1)
   net_membership_2 <- stats::na.omit(net_membership_2)
-  common_rows <- intersect(row.names(net_membership_1),
-                           row.names(net_membership_2))
+  common_rows <- intersect(
+    row.names(net_membership_1),
+    row.names(net_membership_2)
+  )
   net_membership_1 <- net_membership_1[common_rows, ]
   net_membership_2 <- net_membership_2[common_rows, ]
 
@@ -110,8 +129,8 @@ construct_2study_rbh_correlation_based <- function(
   } else {
     rbh <- stats::cor(net_membership_1, net_membership_2, method = method)
   }
-  gen_cutoff <- stats::quantile(rbh, upper_quant,na.rm = TRUE)
-  rbh_threshold <- stats::quantile(rbh, lower_quant,na.rm = TRUE)
+  gen_cutoff <- stats::quantile(rbh, upper_quant, na.rm = TRUE)
+  rbh_threshold <- stats::quantile(rbh, lower_quant, na.rm = TRUE)
 
 
   # Construct a list representing the best hit(s) for each row (up to max_rank
@@ -140,22 +159,22 @@ construct_2study_rbh_correlation_based <- function(
   temp <- lapply(1:row_count, function(row_num) {
     lapply(1:col_count, function(col_num) {
       return(ifelse((rbh[row_num, col_num] >= gen_cutoff) |
-                      (col_num %in% row_hits[[row_num]] &
-                         row_num %in% col_hits[[col_num]] &
-                         rbh[row_num, col_num] >= rbh_threshold),
-                    rbh[row_num, col_num],
-                    0
+        (col_num %in% row_hits[[row_num]] &
+          row_num %in% col_hits[[col_num]] &
+          rbh[row_num, col_num] >= rbh_threshold),
+      rbh[row_num, col_num],
+      0
       ))
     })
   })
   # Bind these lists into a matrix
   rbh_network <- Matrix::Matrix(as.numeric(do.call(rbind, temp)),
-                                nrow = row_count,
-                                sparse = sparse,
-                                dimnames = list(
-                                  dimnames(net_membership_1)[[2]],
-                                  dimnames(net_membership_2)[[2]]
-                                )
+    nrow = row_count,
+    sparse = sparse,
+    dimnames = list(
+      dimnames(net_membership_1)[[2]],
+      dimnames(net_membership_2)[[2]]
+    )
   )
   return(as.matrix(rbh_network))
 }

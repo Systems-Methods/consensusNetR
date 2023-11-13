@@ -61,15 +61,18 @@ consensus_memb <- get_gene_community_membership(consensus_comms, memb_list, 2)
 
 # Need to use icWGCNA for individual eigengenes
 GSE39582_eigen <- icWGCNA::compute_eigengene_matrix(
-                           ex = GSE39582_df,
-                           membership_matrix = consensus_memb)
+  ex = GSE39582_df,
+  membership_matrix = consensus_memb
+)
 read_eigen <- icWGCNA::compute_eigengene_matrix(
-                           ex = read_df,
-                           membership_matrix = consensus_memb)
+  ex = read_df,
+  membership_matrix = consensus_memb
+)
 coad_eigen <- icWGCNA::compute_eigengene_matrix(
-                           ex = coad_df,
-                           membership_matrix = consensus_memb)
-eigen_list = list(GSE39582_eigen, read_eigen, coad_eigen)
+  ex = coad_df,
+  membership_matrix = consensus_memb
+)
+eigen_list <- list(GSE39582_eigen, read_eigen, coad_eigen)
 
 plot_consensus_eig_dist(eigen_list)
 }

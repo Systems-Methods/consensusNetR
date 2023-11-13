@@ -13,7 +13,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' Create list of community_membership object
+#' # Create list of community_membership object
 #' memb_list <- list(
 #'   GSE39582 = GSE39582_icwgcna$community_membership,
 #'   READ = read_icwgcna$community_membership,
@@ -28,19 +28,19 @@
 #' consensus_comms <- detect_consensus_communities(ma)
 #' }
 detect_consensus_communities <- function(rbh,
-                                        expansion = 2) {
-
+                                         expansion = 2) {
   consensus_comms <- MCL::mcl(rbh,
-                    addLoops = TRUE,
-                    allow1 = FALSE,
-                    expansion = expansion)
+    addLoops = TRUE,
+    allow1 = FALSE,
+    expansion = expansion
+  )
 
   message("Clusters detected")
   mapping_list <- as.list(seq_len(length(unique(consensus_comms$Cluster))))
   names(mapping_list) <- names(sort(table(consensus_comms$Cluster),
-                                    decreasing = TRUE))
+    decreasing = TRUE
+  ))
 
   consensus_comms$Cluster <- as.vector(unlist(mapping_list[as.character(consensus_comms$Cluster)]))
   return(consensus_comms)
 }
-

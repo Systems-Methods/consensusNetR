@@ -31,7 +31,9 @@ compare_networks
 }
 \examples{
 \dontrun{
-compare_networks(GSE39582_icwgcna$community_membership
-                 read_icwgcna$community_membership)
+compare_networks(
+  GSE39582_icwgcna$community_membership,
+  read_icwgcna$community_membership
+)
 }
 }

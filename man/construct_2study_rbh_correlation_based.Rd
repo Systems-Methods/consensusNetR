@@ -53,7 +53,8 @@ be distinct.
 \examples{
 \dontrun{
 rbh <- construct_2study_rbh_correlation_based(
-              GSE39582_icwgcna$community_membership,
-              read_icwgcna$community_membership)
+  GSE39582_icwgcna$community_membership,
+  read_icwgcna$community_membership
+)
 }
 }

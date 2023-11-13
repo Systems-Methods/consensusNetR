@@ -35,48 +35,55 @@
 #'
 #' # Need to use icWGCNA for individual eigengenes
 #' GSE39582_eigen <- icWGCNA::compute_eigengene_matrix(
-#'                            ex = GSE39582_df,
-#'                            membership_matrix = consensus_memb)
+#'   ex = GSE39582_df,
+#'   membership_matrix = consensus_memb
+#' )
 #' read_eigen <- icWGCNA::compute_eigengene_matrix(
-#'                            ex = read_df,
-#'                            membership_matrix = consensus_memb)
+#'   ex = read_df,
+#'   membership_matrix = consensus_memb
+#' )
 #' coad_eigen <- icWGCNA::compute_eigengene_matrix(
-#'                            ex = coad_df,
-#'                            membership_matrix = consensus_memb)
-#' eigen_list = list(GSE39582_eigen, read_eigen, coad_eigen)
+#'   ex = coad_df,
+#'   membership_matrix = consensus_memb
+#' )
+#' eigen_list <- list(GSE39582_eigen, read_eigen, coad_eigen)
 #'
 #' plot_consensus_eig_dist(eigen_list)
 #' }
-plot_consensus_eig_dist <-  function(eigen_list,
-                                     target_study_index = 1,
-                                     filename = NA,
-                                     device = "png",
-                                     width = 12,
-                                     height = 10,
-                                     dpi = 1000)
-{
-  check_installed(c('ggplot2', 'hrbrthemes', 'tidyr'))
+plot_consensus_eig_dist <- function(eigen_list,
+                                    target_study_index = 1,
+                                    filename = NA,
+                                    device = "png",
+                                    width = 12,
+                                    height = 10,
+                                    dpi = 1000) {
+  check_installed(c("ggplot2", "hrbrthemes", "tidyr"))
 
-  temp_eigen   <- as.data.frame(t(as.data.frame(lapply(
+  temp_eigen <- as.data.frame(t(as.data.frame(lapply(
     normalize_eigengenes(
       eigen_list = eigen_list,
-      target_study_index = target_study_index),
+      target_study_index = target_study_index
+    ),
     unlist
   ))))
   temp_eigen$Community <- factor(rownames(temp_eigen),
-                                 levels = rownames(temp_eigen))
-  temp_eigen  <- tidyr::pivot_longer(
-    data = temp_eigen,names_to = "sample",
+    levels = rownames(temp_eigen)
+  )
+  temp_eigen <- tidyr::pivot_longer(
+    data = temp_eigen, names_to = "sample",
     cols = colnames(temp_eigen)[-ncol(temp_eigen)]
   )
 
-  eigen_dens_plots  <- ggplot2::ggplot(
+  eigen_dens_plots <- ggplot2::ggplot(
     temp_eigen,
-    ggplot2::aes(x = .data$value,
-                 color = .data$Community,
-                 fill = .data$Community)) +
+    ggplot2::aes(
+      x = .data$value,
+      color = .data$Community,
+      fill = .data$Community
+    )
+  ) +
     ggplot2::geom_density(alpha = 0.8) +
-    ggplot2::facet_wrap(~Community,scales = "free") +
+    ggplot2::facet_wrap(~Community, scales = "free") +
     hrbrthemes::theme_ipsum() +
     ggplot2::ylab("") +
     ggplot2::xlab("") +
@@ -85,28 +92,31 @@ plot_consensus_eig_dist <-  function(eigen_list,
       panel.spacing = ggplot2::unit(0.1, "lines"),
       strip.text.x = ggplot2::element_text(size = 12),
       axis.text.x = ggplot2::element_blank(),
-      axis.text.y  = ggplot2::element_blank())
+      axis.text.y = ggplot2::element_blank()
+    )
 
   if (is.na(filename)) {
     print(eigen_dens_plots)
   } else {
-    ggplot2::ggsave(filename,eigen_dens_plots, device = device,
-                    height = height, width = width, dpi = dpi)
+    ggplot2::ggsave(filename, eigen_dens_plots,
+      device = device,
+      height = height, width = width, dpi = dpi
+    )
   }
 }
 
 # quantile normalize of each communities eigen genes based on a target network
-normalize_eigengenes <- function(eigen_list, target_study_index=1){
-  check_installed('aroma.light')
+normalize_eigengenes <- function(eigen_list, target_study_index = 1) {
+  check_installed("aroma.light")
 
   consensus_comms <- rownames(eigen_list[[target_study_index]])
   qnormed_list <- list()
   for (i in 1:nrow(eigen_list[[target_study_index]])) {
-    t_list   <- plyr::llply(eigen_list, function(x){return(x[i,])})
+    t_list <- plyr::llply(eigen_list, function(x) {
+      return(x[i, ])
+    })
     q_normed <- aroma.light::normalizeQuantileRank(t_list, xTarget = sort(t_list[[target_study_index]]))
     qnormed_list[[consensus_comms[i]]] <- q_normed
   }
   return(qnormed_list)
 }
-
-

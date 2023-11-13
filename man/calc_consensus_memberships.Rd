@@ -55,6 +55,6 @@ ma <- construct_rbh_correlation_based(
   max_rank = 2
 )
 consensus_comms <- detect_consensus_communities(ma)
-consensus_memb <- calc_consensus_memberships(consensus_comms,memb_list)
+consensus_memb <- calc_consensus_memberships(consensus_comms, memb_list)
 }
 }

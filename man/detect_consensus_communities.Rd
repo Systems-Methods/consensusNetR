@@ -23,7 +23,7 @@ that the clusters are in order of size (1 being the largest)
 }
 \examples{
 \dontrun{
-Create list of community_membership object
+# Create list of community_membership object
 memb_list <- list(
   GSE39582 = GSE39582_icwgcna$community_membership,
   READ = read_icwgcna$community_membership,

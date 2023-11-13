@@ -35,9 +35,10 @@ UCSCXenaTools::getTCGAdata(
   destdir = "/MY_PATH/data/"
 )
 read_df <- data.table::fread(
-  '~/Downloads/TCGA.READ.sampleMap/HiSeqV2.gz',
-  data.table = FALSE) %>%
-  tibble::column_to_rownames('sample')
+  "~/Downloads/TCGA.READ.sampleMap/HiSeqV2.gz",
+  data.table = FALSE
+) %>%
+  tibble::column_to_rownames("sample")
 
 
 # TCGA COAD
@@ -51,9 +52,10 @@ UCSCXenaTools::getTCGAdata(
 )
 
 coad_df <- data.table::fread(
-  '~/Downloads/TCGA.COAD.sampleMap/HiSeqV2.gz',
-  data.table = FALSE) %>%
-  tibble::column_to_rownames('sample')
+  "~/Downloads/TCGA.COAD.sampleMap/HiSeqV2.gz",
+  data.table = FALSE
+) %>%
+  tibble::column_to_rownames("sample")
 
 
 # Read in data and create list of community_membership object
@@ -70,16 +72,16 @@ all_genes <- unique(c(
   rownames(GSE39582_icwgcna$community_membership),
   rownames(read_icwgcna$community_membership),
   rownames(coad_icwgcna$community_membership)
-  ))
+))
 withr::with_seed(
   523757542,
   {
     gene_subset <- sort(sample(all_genes, 500))
-    GSE39582_mem <- GSE39582_icwgcna$community_membership[gene_subset,] |>
+    GSE39582_mem <- GSE39582_icwgcna$community_membership[gene_subset, ] |>
       na.omit()
-    read_mem <- read_icwgcna$community_membership[gene_subset,] |>
+    read_mem <- read_icwgcna$community_membership[gene_subset, ] |>
       na.omit()
-    coad_mem <- coad_icwgcna$community_membership[gene_subset,] |>
+    coad_mem <- coad_icwgcna$community_membership[gene_subset, ] |>
       na.omit()
   }
 )
@@ -91,13 +93,15 @@ memb_list <- list(
 )
 
 saveRDS(memb_list,
-        file = testthat::test_path("fixtures","memb_list.rds"))
+  file = testthat::test_path("fixtures", "memb_list.rds")
+)
 
 rbh <- suppressMessages(construct_rbh_overlap_based(memb_list))
 consensus_comms <- suppressMessages(detect_consensus_communities(rbh))
 
 saveRDS(consensus_comms,
-        file = testthat::test_path("fixtures","consensus_comms.rds"))
+  file = testthat::test_path("fixtures", "consensus_comms.rds")
+)
 
 # Getting ex subset
 
@@ -115,7 +119,8 @@ ex_list <- list(
 )
 
 saveRDS(ex_list,
-        file = testthat::test_path("fixtures","ex_list.rds"))
+  file = testthat::test_path("fixtures", "ex_list.rds")
+)
 
 
 
@@ -126,7 +131,5 @@ eigen_list <- list(
 )
 
 saveRDS(eigen_list,
-        file = testthat::test_path("fixtures","eigen_list.rds"))
-
-
-
+  file = testthat::test_path("fixtures", "eigen_list.rds")
+)
