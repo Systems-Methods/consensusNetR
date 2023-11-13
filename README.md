@@ -7,6 +7,8 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![Codecov test
+coverage](https://codecov.io/gh/Systems-Methods/consensusNetR/branch/main/graph/badge.svg)](https://app.codecov.io/gh/Systems-Methods/consensusNetR?branch=main)
 <!-- badges: end -->
 
 consensusNetR is an R Package for combining networks into a consensus
@@ -31,7 +33,7 @@ or:
 ``` r
 remotes::install_git(
   "https://github.com/Systems-Methods/consensusNetR"
-  )
+)
 ```
 
 # Example Workflow
@@ -50,7 +52,6 @@ details and code.
 ## Consensus construction
 
 ``` r
-
 # Create list of community_membership object
 memb_list <- list(
   GSE39582 = GSE39582_icwgcna$community_membership,
@@ -72,32 +73,33 @@ alt="Reciprocal Best Hits Heatmap" />
 </figure>
 
 ``` r
-
 # Detect Communities in Adjacency/Reciprocal Best Hits Matrix
-consensus_comms <- detect_consensus_communities(rbh) 
+consensus_comms <- detect_consensus_communities(rbh)
 
 # Compute the average metagene across studies for each community
-consensus_memb  <- calc_consensus_memberships(consensus_comms, memb_list)
+consensus_memb <- calc_consensus_memberships(consensus_comms, memb_list)
 ```
 
 ## Downstream Analysis
 
 ``` r
-
 consensus_genes <- get_gene_community_membership(consensus_comms, memb_list, 2)
 
 # Need to use icWGCNA for individual eigengenes
 GSE39582_eigen <- icWGCNA::compute_eigengene_matrix(
-                          ex = GSE39582_df,
-                          membership_matrix = consensus_memb)
+  ex = GSE39582_df,
+  membership_matrix = consensus_memb
+)
 read_eigen <- icWGCNA::compute_eigengene_matrix(
-                          ex = read_df,
-                          membership_matrix = consensus_memb)
+  ex = read_df,
+  membership_matrix = consensus_memb
+)
 coad_eigen <- icWGCNA::compute_eigengene_matrix(
-                          ex = coad_df,
-                          membership_matrix = consensus_memb)
+  ex = coad_df,
+  membership_matrix = consensus_memb
+)
 
-eigen_list = list(GSE39582_eigen, read_eigen, coad_eigen)
+eigen_list <- list(GSE39582_eigen, read_eigen, coad_eigen)
 plot_consensus_eig_dist(eigen_list)
 ```
 
@@ -114,7 +116,6 @@ function. This matches with the two TCGA datasets already in gene
 symbols.
 
 ``` r
-
 library(icWGCNA)
 
 # GSE39582
@@ -123,20 +124,20 @@ GSE39582 <- GEOquery::getGEO("GSE39582")
 # TCGA READ
 UCSCXenaTools::getTCGAdata(
   project = "READ",
-  mRNASeq = TRUE, 
+  mRNASeq = TRUE,
   mRNASeqType = "normalized",
-  clinical = TRUE, 
-  download = TRUE, 
+  clinical = TRUE,
+  download = TRUE,
   destdir = "/MY_PATH/data/"
 )
 
 # TCGA COAD
 UCSCXenaTools::getTCGAdata(
   project = "COAD",
-  mRNASeq = TRUE, 
+  mRNASeq = TRUE,
   mRNASeqType = "normalized",
-  clinical = TRUE, 
-  download = TRUE, 
+  clinical = TRUE,
+  download = TRUE,
   destdir = "/MY_PATH/data/"
 )
 ```
@@ -154,21 +155,20 @@ using the
 function.
 
 ``` r
-
 # creating annotation file for gene mapping to gene symbols
 GSE39582_annotation <- GSE39582@featureData@data |>
-  dplyr::select(ID, gene_symbol = `Gene Symbol`) |>  
+  dplyr::select(ID, gene_symbol = `Gene Symbol`) |>
   dplyr::mutate(
     gene_symbol = purrr::map(
       gene_symbol, ~ stringr::str_split(.x, " /// ")[[1]]
     )
-  ) %>% 
+  ) %>%
   tidyr::unnest(gene_symbol)
 
 GSE39582_hugo <- icWGCNA::gene_mapping(
-  GSE39582@assayData$exprs, 
-  GSE39582_annotation, 
-  compress_fun = "highest_mean", 
+  GSE39582@assayData$exprs,
+  GSE39582_annotation,
+  compress_fun = "highest_mean",
   compress_trans = "log_exp"
 )
 ```
@@ -187,7 +187,6 @@ demonstration purposes. These runs benefit greatly by using multiple
 computer cores.
 
 ``` r
-
 # GSE39582
 GSE39582_icwgcna <- icWGCNA::icwgcna(GSE39582_hugo, maxIt = 5)
 
