@@ -32,6 +32,10 @@ test_that("plot_consensus_eig_dist defaults", {
       save_png(plot_consensus_eig_dist(eigen_list)),
       "plot_consensus_eig_dist.png"
     )
+  } else if (Sys.info()["sysname"] == "Linux") {
+    expect_no_error(
+      plot_consensus_eig_dist(eigen_list)
+    )
   }
   expect_no_error(
     plot_consensus_eig_dist(

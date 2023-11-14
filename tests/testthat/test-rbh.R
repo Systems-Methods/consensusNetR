@@ -34,16 +34,10 @@ test_that("plot rbh defaults", {
       save_png(plot_rbh(test_rbh, testing_memb_list)),
       "plot_rbh.png"
     )
-  }
-})
-
-
-test_that("plot rbh linux", {
-  if (Sys.info()["sysname"] == "Linux") {
+  } else if (Sys.info()["sysname"] == "Linux") {
     test_rbh <- suppressMessages(construct_rbh_overlap_based(testing_memb_list))
     expect_no_error(
       plot_rbh(test_rbh, testing_memb_list)
     )
   }
 })
-
