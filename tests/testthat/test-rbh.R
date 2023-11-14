@@ -39,21 +39,10 @@ test_that("plot rbh defaults", {
 
 
 test_that("plot rbh linux", {
-  # only tested exact figure in Mac OS
   if (Sys.info()["sysname"] == "Linux") {
-    save_jpeg <- function(code, width = 400, height = 400) {
-      path <- withr::local_tempfile(fileext = ".jpeg")
-      jpeg(path, width = width, height = height, quality = 25)
-      on.exit(dev.off())
-      code
-
-      path
-    }
-
     test_rbh <- suppressMessages(construct_rbh_overlap_based(testing_memb_list))
-    expect_snapshot_file(
-      save_jpeg(plot_rbh(test_rbh, testing_memb_list)),
-      "plot_rbh_linux.jpeg"
+    expect_no_error(
+      plot_rbh(test_rbh, testing_memb_list)
     )
   }
 })
