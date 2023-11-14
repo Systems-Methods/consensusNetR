@@ -58,7 +58,8 @@ ma <- construct_rbh_correlation_based(
 )
 consensus_comms <- detect_consensus_communities(ma)
 consensus_memb <- calc_consensus_memberships(consensus_comms, memb_list,
-gene_cohort_N = 2)
+  gene_cohort_N = 2
+)
 
 # Need to use icWGCNA for individual eigengenes
 GSE39582_eigen <- icWGCNA::compute_eigengene_matrix(

@@ -34,7 +34,6 @@ Suggests:
     dplyr,
     GEOquery,
     ggplot2,
-    hrbrthemes,
     icWGCNA,
     mclust,
     pheatmap,

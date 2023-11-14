@@ -59,7 +59,7 @@ plot_consensus_eig_dist <- function(eigen_list,
                                     width = 12,
                                     height = 10,
                                     dpi = 1000) {
-  rlang::check_installed(c("ggplot2", "hrbrthemes", "tidyr"))
+  rlang::check_installed(c("ggplot2", "tidyr"))
 
   temp_eigen <- as.data.frame(t(as.data.frame(lapply(
     normalize_eigengenes(
@@ -86,7 +86,7 @@ plot_consensus_eig_dist <- function(eigen_list,
   ) +
     ggplot2::geom_density(alpha = 0.8) +
     ggplot2::facet_wrap(~Community, scales = "free") +
-    hrbrthemes::theme_ipsum() +
+    ggplot2::theme_minimal() +
     ggplot2::ylab("") +
     ggplot2::xlab("") +
     ggplot2::theme(
