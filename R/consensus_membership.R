@@ -25,7 +25,7 @@
 #'   COAD = coad_icwgcna$community_membership
 #' )
 #' ma <- construct_rbh_correlation_based(
-#'   network_membership_list,
+#'   memb_list,
 #'   upper_quant = .99,
 #'   lower_quant = .05,
 #'   max_rank = 2
@@ -57,8 +57,7 @@ calc_consensus_memberships <- function(consensus_comms,
 
   start <- 0
   stop <- 0
-  for (i in seq_len(length(network_membership_list)))
-  {
+  for (i in seq_len(length(network_membership_list))) {
     start <- stop + 1
     stop <- start + n_metagenes[[i]] - 1
 
@@ -78,10 +77,16 @@ calc_consensus_memberships <- function(consensus_comms,
     }
   }
 
-  meanGeneLoadings <- t(plyr::laply(clusterLoadings,
-    .fun = compressMetaGenes,
-    method = "none", w = weights
-  ))
+  meanGeneLoadings <- do.call(
+    cbind,
+    lapply(
+      clusterLoadings,
+      compressMetaGenes,
+      method = "none",
+      w = weights
+    )
+  )
+
   rownames(meanGeneLoadings) <- u_genes
   colnames(meanGeneLoadings) <- paste0(comm_prefix, names(clusterLoadings))
   if (remove_misc_comm) {

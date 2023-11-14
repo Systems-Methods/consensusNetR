@@ -204,7 +204,8 @@ construct_rbh_correlation_based <- function(network_membership_list,
 #' @param rbh reciprocal best hits matrix (output of
 #' [construct_rbh_correlation_based()] or
 #' [construct_rbh_overlap_based()])
-#' @param memb_list memb_list?
+#' @param network_membership_list a list containing community membership scores for each
+#' network. Where rownames contain unique gene ids and column names are community names
 #' @param file_name File name
 #' @param width figure width
 #' @param height figure height
@@ -221,10 +222,11 @@ construct_rbh_correlation_based <- function(network_membership_list,
 #' ma <- construct_rbh_overlap_based(memb_list)
 #' plot_rbh(ma, memb_list)
 #' }
-plot_rbh <- function(rbh, memb_list, file_name = NA, width = 10, height = 8) {
-  check_installed("pheatmap")
+plot_rbh <- function(rbh, network_membership_list,
+                     file_name = NA, width = 10, height = 8) {
+  rlang::check_installed("pheatmap")
 
-  ns <- sapply(memb_list, ncol)
+  ns <- sapply(network_membership_list, ncol)
   gaps <- sapply(1:length(ns), function(i) {
     sum(ns[1:i])
   })

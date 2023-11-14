@@ -31,7 +31,8 @@
 #'   max_rank = 2
 #' )
 #' consensus_comms <- detect_consensus_communities(ma)
-#' consensus_memb <- get_gene_community_membership(consensus_comms, memb_list, 2)
+#' consensus_memb <- calc_consensus_memberships(consensus_comms, memb_list,
+#' gene_cohort_N = 2)
 #'
 #' # Need to use icWGCNA for individual eigengenes
 #' GSE39582_eigen <- icWGCNA::compute_eigengene_matrix(
@@ -57,7 +58,7 @@ plot_consensus_eig_dist <- function(eigen_list,
                                     width = 12,
                                     height = 10,
                                     dpi = 1000) {
-  check_installed(c("ggplot2", "hrbrthemes", "tidyr"))
+  rlang::check_installed(c("ggplot2", "hrbrthemes", "tidyr"))
 
   temp_eigen <- as.data.frame(t(as.data.frame(lapply(
     normalize_eigengenes(
@@ -107,16 +108,16 @@ plot_consensus_eig_dist <- function(eigen_list,
 
 # quantile normalize of each communities eigen genes based on a target network
 normalize_eigengenes <- function(eigen_list, target_study_index = 1) {
-  check_installed("aroma.light")
+  rlang::check_installed("aroma.light")
 
   consensus_comms <- rownames(eigen_list[[target_study_index]])
   qnormed_list <- list()
   for (i in 1:nrow(eigen_list[[target_study_index]])) {
-    t_list <- plyr::llply(eigen_list, function(x) {
-      return(x[i, ])
+    t_list <- lapply(eigen_list, function(x) {
+      x[i, ]
     })
     q_normed <- aroma.light::normalizeQuantileRank(t_list, xTarget = sort(t_list[[target_study_index]]))
     qnormed_list[[consensus_comms[i]]] <- q_normed
   }
-  return(qnormed_list)
+  qnormed_list
 }

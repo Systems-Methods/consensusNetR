@@ -26,8 +26,7 @@ Imports:
     foreach,
     Matrix,
     MCL,
-    rlang,
-    plyr
+    rlang
 Suggests:
     aroma.light,
     dendextend,
@@ -39,8 +38,8 @@ Suggests:
     icWGCNA,
     mclust,
     pheatmap,
-    purrr,
     Rfast,
+    purrr,
     testthat (>= 3.0.0),
     tidyr,
     UCSCXenaTools,

@@ -17,7 +17,7 @@
 #' calc_cor_of_cor(ex_list)
 #' }
 calc_cor_of_cor <- function(ex_list) {
-  check_installed(c("foreach", "Rfast", "DescTools"))
+  rlang::check_installed(c("foreach", "Rfast", "DescTools"))
 
   genes <- rownames(ex_list[[1]])
   for (i in 2:length(ex_list)) {
@@ -91,7 +91,7 @@ compare_networks <- function(net_membership_1,
                              memb_cut = 0.5,
                              na_flag = c("none", "both", "either")) {
   na_flag <- match.arg(na_flag)
-  check_installed(c("Rfast", "dendextend", "mclust"))
+  rlang::check_installed(c("Rfast", "dendextend", "mclust"))
 
   K_1 <- min(ncol(net_membership_1), K)
   K_2 <- min(ncol(net_membership_2), K)

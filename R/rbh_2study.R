@@ -41,35 +41,18 @@ construct_2study_rbh_overlap_based <- function(net_membership_1,
   )
 
   overlap <- t(rankX) %*% rankY
-  x2y <- plyr::alply(
-    overlap, 1,
-    function(x) {
-      ret <- which(x == max(x) & x != 0)
-      if (length(ret) == 0) {
-        return(NA)
-      } else {
-        return(ret[1])
-      }
-    }
-  )
-  y2x <- plyr::alply(
-    overlap, 2,
-    function(x) {
-      ret <- which(x == max(x) & x != 0)
-      if (length(ret) == 0) {
-        return(NA)
-      } else {
-        return(ret[1])
-      }
-    }
-  )
+
+  x2y <- max.col(overlap, ties.method = "first")
+  x2y[rowSums(overlap) == 0] <- NA
   x2y <- data.frame(
-    x2yName = as.numeric(names(x2y)),
-    x2yMap = unlist(x2y)
+    x2yName = 1:length(x2y),
+    x2yMap = x2y
   )
+  y2x <- max.col(t(overlap), ties.method = "first")
+  y2x[rowSums(t(overlap)) == 0] <- NA
   y2x <- data.frame(
-    y2xName = as.numeric(names(y2x)),
-    y2xMap = unlist(y2x)
+    y2xName = 1:length(y2x),
+    y2xMap = y2x
   )
   y2x <- y2x[match(x2y$x2yMap, y2x$y2xName), ]
 

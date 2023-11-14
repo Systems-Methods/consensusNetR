@@ -4,14 +4,15 @@
 \alias{plot_rbh}
 \title{RBH Heatmap Creation}
 \usage{
-plot_rbh(rbh, memb_list, file_name = NA, width = 10, height = 8)
+plot_rbh(rbh, network_membership_list, file_name = NA, width = 10, height = 8)
 }
 \arguments{
 \item{rbh}{reciprocal best hits matrix (output of
 \code{\link[=construct_rbh_correlation_based]{construct_rbh_correlation_based()}} or
 \code{\link[=construct_rbh_overlap_based]{construct_rbh_overlap_based()}})}
 
-\item{memb_list}{memb_list?}
+\item{network_membership_list}{a list containing community membership scores for each
+network. Where rownames contain unique gene ids and column names are community names}
 
 \item{file_name}{File name}
 

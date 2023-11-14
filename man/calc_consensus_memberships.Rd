@@ -49,7 +49,7 @@ memb_list <- list(
   COAD = coad_icwgcna$community_membership
 )
 ma <- construct_rbh_correlation_based(
-  network_membership_list,
+  memb_list,
   upper_quant = .99,
   lower_quant = .05,
   max_rank = 2
