@@ -13,8 +13,8 @@
     respective communities.">
 <title>R Package for combining networks into a consensus network • consensusNetR</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="R Package for combining networks into a consensus network">
 <meta property="og:description" content="consensusNet provides tools for combining the results of
@@ -36,7 +36,7 @@
     
     <a class="navbar-brand me-2" href="index.html">consensusNetR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,6 +47,9 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item">
   <a class="nav-link" href="reference/index.html">Reference</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="news/index.html">Changelog</a>
 </li>
       </ul>
 <form class="form-inline my-2 my-lg-0" role="search">
@@ -85,14 +88,153 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_git</span><span class="op">(</span></span>
 <span>  <span class="st">"https://github.com/Systems-Methods/consensusNetR"</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level1">
+<h1 id="example-workflow">Example Workflow<a class="anchor" aria-label="anchor" href="#example-workflow"></a>
+</h1>
+<p>This example will create a consensus network from three public datasets: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE39582" class="external-link">GSE39582</a>, <a href="https://portal.gdc.cancer.gov/projects/TCGA-COAD" class="external-link">TCGA COAD</a>, and <a href="https://portal.gdc.cancer.gov/projects/TCGA-READ" class="external-link">TCGA READ</a></p>
+<p>This example workflow begins with <a href="https://systems-methods.github.io/icWGCNA/" class="external-link">icWGCNA</a> results, however alternative methods work as well (KNN, PCA, ICA, WGCNA). See <a href="#example-appendix">Example Appendix</a> for downloading data and icWGCNA run details and code.</p>
+<div class="section level2">
+<h2 id="consensus-construction">Consensus construction<a class="anchor" aria-label="anchor" href="#consensus-construction"></a>
+</h2>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Create list of community_membership object</span></span>
+<span><span class="va">memb_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  GSE39582 <span class="op">=</span> <span class="va">GSE39582_icwgcna</span><span class="op">$</span><span class="va">community_membership</span>,</span>
+<span>  READ <span class="op">=</span> <span class="va">read_icwgcna</span><span class="op">$</span><span class="va">community_membership</span>,</span>
+<span>  COAD <span class="op">=</span> <span class="va">coad_icwgcna</span><span class="op">$</span><span class="va">community_membership</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Construct Meta Reciprocal Best Hits based on overlaps (318 communities found)</span></span>
+<span><span class="va">rbh</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/construct_rbh_overlap_based.html">construct_rbh_overlap_based</a></span><span class="op">(</span><span class="va">memb_list</span>, top_n <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">rbh</span><span class="op">)</span></span>
+<span><span class="co">## 318</span></span>
+<span></span>
+<span><span class="co"># RBH Heatmap Creation</span></span>
+<span><span class="fu"><a href="reference/plot_rbh.html">plot_rbh</a></span><span class="op">(</span>rbh <span class="op">=</span> <span class="va">rbh</span>, network_membership_list <span class="op">=</span> <span class="va">memb_list</span><span class="op">)</span></span></code></pre></div>
+<figure><img src="reference/figures/README-RBH-1.png" alt="Reciprocal Best Hits Heatmap"><figcaption aria-hidden="true">
+Reciprocal Best Hits Heatmap
+</figcaption></figure><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Detect Communities in Adjacency/Reciprocal Best Hits Matrix</span></span>
+<span><span class="va">consensus_comms</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/detect_consensus_communities.html">detect_consensus_communities</a></span><span class="op">(</span><span class="va">rbh</span><span class="op">)</span></span>
+<span><span class="co"># showing the first 10 communities </span></span>
+<span><span class="co">#note community 1 is a miscellaneous and will be removed</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">consensus_comms</span><span class="op">$</span><span class="va">Cluster</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span></span>
+<span><span class="co">##    1   2   3   4   5   6   7   8   9  10 </span></span>
+<span><span class="co">##  200   3   3   3   3   3   3   3   3   3 </span></span>
+<span></span>
+<span><span class="co"># Compute the average metagene across studies for each community</span></span>
+<span><span class="va">consensus_memb</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_consensus_memberships.html">calc_consensus_memberships</a></span><span class="op">(</span><span class="va">consensus_comms</span>, <span class="va">memb_list</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="code-of-conduct">Code of Conduct<a class="anchor" aria-label="anchor" href="#code-of-conduct"></a>
+<h2 id="downstream-analysis">Downstream Analysis<a class="anchor" aria-label="anchor" href="#downstream-analysis"></a>
 </h2>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">consensus_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_gene_community_membership.html">get_gene_community_membership</a></span><span class="op">(</span><span class="va">consensus_comms</span>, <span class="va">memb_list</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">consensus_genes</span><span class="op">)</span></span>
+<span><span class="co">##    gene_id cluster n_studies</span></span>
+<span><span class="co">##  1    A1BG      43         2</span></span>
+<span><span class="co">##  2     A2M       1         2</span></span>
+<span><span class="co">##  3    AACS      19         2</span></span>
+<span><span class="co">##  4   AAGAB      25         2</span></span>
+<span><span class="co">##  5   AASDH      40         2</span></span>
+<span><span class="co">##  6    AASS      42         2</span></span>
+<span></span>
+<span><span class="co"># Need to use icWGCNA for individual eigengenes</span></span>
+<span><span class="va">GSE39582_eigen</span> <span class="op">&lt;-</span> <span class="fu">icWGCNA</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/icWGCNA/man/compute_eigengene_matrix.html" class="external-link">compute_eigengene_matrix</a></span><span class="op">(</span></span>
+<span>  ex <span class="op">=</span> <span class="va">GSE39582_df</span>,</span>
+<span>  membership_matrix <span class="op">=</span> <span class="va">consensus_memb</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">read_eigen</span> <span class="op">&lt;-</span> <span class="fu">icWGCNA</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/icWGCNA/man/compute_eigengene_matrix.html" class="external-link">compute_eigengene_matrix</a></span><span class="op">(</span></span>
+<span>  ex <span class="op">=</span> <span class="va">read_df</span>,</span>
+<span>  membership_matrix <span class="op">=</span> <span class="va">consensus_memb</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">coad_eigen</span> <span class="op">&lt;-</span> <span class="fu">icWGCNA</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/icWGCNA/man/compute_eigengene_matrix.html" class="external-link">compute_eigengene_matrix</a></span><span class="op">(</span></span>
+<span>  ex <span class="op">=</span> <span class="va">coad_df</span>,</span>
+<span>  membership_matrix <span class="op">=</span> <span class="va">consensus_memb</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">eigen_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">GSE39582_eigen</span>, <span class="va">read_eigen</span>, <span class="va">coad_eigen</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/plot_consensus_eig_dist.html">plot_consensus_eig_dist</a></span><span class="op">(</span><span class="va">eigen_list</span><span class="op">)</span></span></code></pre></div>
+<figure><img src="reference/figures/README-eig-dist-1.png" alt="Individual Eigengene Distributions"><figcaption aria-hidden="true">
+Individual Eigengene Distributions
+</figcaption></figure>
+</div>
+<div class="section level2">
+<h2 id="example-appendix">Example Appendix<a class="anchor" aria-label="anchor" href="#example-appendix"></a>
+</h2>
+<details><summary>
+Downloading data
+</summary><p>For GSE39582 we need to convert from Affymetrix Human Genome U133 Plus 2.0 Array to gene symbols, by using the <code><a href="https://rdrr.io/pkg/icWGCNA/man/gene_mapping.html" class="external-link">icWGCNA::gene_mapping()</a></code> function. This matches with the two TCGA datasets already in gene symbols.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/Systems-Methods/icWGCNA" class="external-link">icWGCNA</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># GSE39582</span></span>
+<span><span class="va">GSE39582</span> <span class="op">&lt;-</span> <span class="fu">GEOquery</span><span class="fu">::</span><span class="fu"><a href="http://seandavi.github.io/GEOquery/reference/getGEO.html" class="external-link">getGEO</a></span><span class="op">(</span><span class="st">"GSE39582"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># TCGA READ</span></span>
+<span><span class="fu">UCSCXenaTools</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/UCSCXenaTools/reference/getTCGAdata.html" class="external-link">getTCGAdata</a></span><span class="op">(</span></span>
+<span>  project <span class="op">=</span> <span class="st">"READ"</span>,</span>
+<span>  mRNASeq <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  mRNASeqType <span class="op">=</span> <span class="st">"normalized"</span>,</span>
+<span>  clinical <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  download <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  destdir <span class="op">=</span> <span class="st">"/MY_PATH/data/"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># TCGA COAD</span></span>
+<span><span class="fu">UCSCXenaTools</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/UCSCXenaTools/reference/getTCGAdata.html" class="external-link">getTCGAdata</a></span><span class="op">(</span></span>
+<span>  project <span class="op">=</span> <span class="st">"COAD"</span>,</span>
+<span>  mRNASeq <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  mRNASeqType <span class="op">=</span> <span class="st">"normalized"</span>,</span>
+<span>  clinical <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  download <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  destdir <span class="op">=</span> <span class="st">"/MY_PATH/data/"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</details><details><summary>
+Preprocessing steps
+</summary><p>All datasets must have consistent annotation (i.e. Gene symbols, Entrez, Ensembl, …). In this example we will convert GSE39582 to gene symbols using the <a href="https://systems-methods.github.io/icWGCNA/reference/gene_mapping.html" class="external-link">icWGCNA::gene_mapping()</a> function.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># creating annotation file for gene mapping to gene symbols</span></span>
+<span><span class="va">GSE39582_annotation</span> <span class="op">&lt;-</span> <span class="va">GSE39582</span><span class="op">@</span><span class="va">featureData</span><span class="op">@</span><span class="va">data</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">ID</span>, gene_symbol <span class="op">=</span> <span class="va">`Gene Symbol`</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    gene_symbol <span class="op">=</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
+<span>      <span class="va">gene_symbol</span>, <span class="op">~</span> <span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_split.html" class="external-link">str_split</a></span><span class="op">(</span><span class="va">.x</span>, <span class="st">" /// "</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html" class="external-link">unnest</a></span><span class="op">(</span><span class="va">gene_symbol</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">GSE39582_hugo</span> <span class="op">&lt;-</span> <span class="fu">icWGCNA</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/icWGCNA/man/gene_mapping.html" class="external-link">gene_mapping</a></span><span class="op">(</span></span>
+<span>  <span class="va">GSE39582</span><span class="op">@</span><span class="va">assayData</span><span class="op">$</span><span class="va">exprs</span>,</span>
+<span>  <span class="va">GSE39582_annotation</span>,</span>
+<span>  compress_fun <span class="op">=</span> <span class="st">"highest_mean"</span>,</span>
+<span>  compress_trans <span class="op">=</span> <span class="st">"log_exp"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>All data should be normalized, however in this example we downloaded the normalized data so no transformations needed here.</p>
+</details><details><summary>
+icWGCNA runs
+</summary><p>For icWGCNA runs using defaults, except reducing max iterations to 5 for demonstration purposes. These runs benefit greatly by using multiple computer cores.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># GSE39582</span></span>
+<span><span class="va">GSE39582_icwgcna</span> <span class="op">&lt;-</span> <span class="fu">icWGCNA</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/icWGCNA/man/icwgcna.html" class="external-link">icwgcna</a></span><span class="op">(</span><span class="va">GSE39582_hugo</span>, maxIt <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># TCGA READ</span></span>
+<span><span class="va">read_icwgcna</span> <span class="op">&lt;-</span> <span class="fu">icWGCNA</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/icWGCNA/man/icwgcna.html" class="external-link">icwgcna</a></span><span class="op">(</span><span class="va">read_df</span>, maxIt <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># TCGA COAD</span></span>
+<span><span class="va">coad_icwgcna</span> <span class="op">&lt;-</span> <span class="fu">icWGCNA</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/icWGCNA/man/icwgcna.html" class="external-link">icwgcna</a></span><span class="op">(</span><span class="va">coad_df</span>, maxIt <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</details>
+</div>
+</div>
+<div class="section level1">
+<h1 id="code-of-conduct">Code of Conduct<a class="anchor" aria-label="anchor" href="#code-of-conduct"></a>
+</h1>
 <p>Please note that the icWGCNA project is released with a <a href="https://contributor-covenant.org/version/2/0/CODE_OF_CONDUCT.html" class="external-link">Contributor Code of Conduct</a>. By contributing to this project, you agree to abide by its terms.</p>
 </div>
-</div>
+
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
@@ -134,6 +276,7 @@
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
+<li><a href="https://app.codecov.io/gh/Systems-Methods/consensusNetR?branch=main" class="external-link"><img src="https://codecov.io/gh/Systems-Methods/consensusNetR/branch/main/graph/badge.svg" alt="Codecov test coverage"></a></li>
 </ul>
 </div>
 

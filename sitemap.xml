@@ -16,34 +16,31 @@
     <loc>https://systems-methods.github.io/consensusNetR/index.html</loc>
   </url>
   <url>
+    <loc>https://systems-methods.github.io/consensusNetR/news/index.html</loc>
+  </url>
+  <url>
+    <loc>https://systems-methods.github.io/consensusNetR/reference/calc_consensus_memberships.html</loc>
+  </url>
+  <url>
     <loc>https://systems-methods.github.io/consensusNetR/reference/calc_cor_of_cor.html</loc>
   </url>
   <url>
     <loc>https://systems-methods.github.io/consensusNetR/reference/compare_networks.html</loc>
   </url>
   <url>
-    <loc>https://systems-methods.github.io/consensusNetR/reference/compute_2Network_RBH_Overlap_Based.html</loc>
+    <loc>https://systems-methods.github.io/consensusNetR/reference/construct_2study_rbh_correlation_based.html</loc>
   </url>
   <url>
-    <loc>https://systems-methods.github.io/consensusNetR/reference/compute_2study_rbh_Correlation_Based.html</loc>
+    <loc>https://systems-methods.github.io/consensusNetR/reference/construct_2study_rbh_overlap_based.html</loc>
   </url>
   <url>
-    <loc>https://systems-methods.github.io/consensusNetR/reference/compute_mean_meta_genes.html</loc>
+    <loc>https://systems-methods.github.io/consensusNetR/reference/construct_rbh_correlation_based.html</loc>
   </url>
   <url>
-    <loc>https://systems-methods.github.io/consensusNetR/reference/construct_multi_rbh_correlation_based.html</loc>
+    <loc>https://systems-methods.github.io/consensusNetR/reference/construct_rbh_overlap_based.html</loc>
   </url>
   <url>
-    <loc>https://systems-methods.github.io/consensusNetR/reference/construct_multi_rbh_overlap_based.html</loc>
-  </url>
-  <url>
-    <loc>https://systems-methods.github.io/consensusNetR/reference/construct_multi_study_rbh.html</loc>
-  </url>
-  <url>
-    <loc>https://systems-methods.github.io/consensusNetR/reference/detect_metagene_communities.html</loc>
-  </url>
-  <url>
-    <loc>https://systems-methods.github.io/consensusNetR/reference/find_unique_top_genes.html</loc>
+    <loc>https://systems-methods.github.io/consensusNetR/reference/detect_consensus_communities.html</loc>
   </url>
   <url>
     <loc>https://systems-methods.github.io/consensusNetR/reference/get_gene_community_membership.html</loc>
