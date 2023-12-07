@@ -1,6 +1,6 @@
 Package: consensusNetR
 Title: R Package for combining networks into a consensus network
-Version: 0.0.1
+Version: 0.0.1.9000
 Authors@R: c(
     person("Mike", "Mason", , "mike.mason@bms.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-5652-7739")),
