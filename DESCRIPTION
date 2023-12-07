@@ -1,6 +1,6 @@
 Package: consensusNetR
 Title: R Package for combining networks into a consensus network
-Version: 0.0.0.9000
+Version: 0.0.1
 Authors@R: c(
     person("Mike", "Mason", , "mike.mason@bms.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-5652-7739")),
@@ -23,24 +23,30 @@ BugReports: https://github.com/Systems-Methods/consensusNetR/issues
 Depends: 
     R (>= 3.5)
 Imports:
-    data.table,
-    dendextend,
-    DescTools,
+    foreach,
     Matrix,
     MCL,
-    mclust,
-    rlang,
-    plyr,
-    tidyr
+    rlang
 Suggests:
     aroma.light,
-    doMC,
+    dendextend,
+    DescTools,
+    dplyr,
+    GEOquery,
     ggplot2,
-    hrbrthemes,
-    parallel,
+    icWGCNA,
+    mclust,
     pheatmap,
-    Rfast
+    Rfast,
+    purrr,
+    testthat (>= 3.0.0),
+    tidyr,
+    UCSCXenaTools,
+    withr
+Remotes: Systems-Methods/icWGCNA
 biocViews:
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+Config/testthat/edition: 3
+Config/testthat/parallel: true
