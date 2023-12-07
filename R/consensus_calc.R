@@ -5,7 +5,11 @@
 #' that the clusters are in order of size (1 being the largest)
 #' @param rbh adjacency/reciprocal best hits matrix, as output by
 #' [construct_rbh_correlation_based()]
-#' @param expansion expansion parameter
+#' @param expansion numeric value > 1 for the expansion parameter
+#'
+#' @details
+#' See [MCL::mcl()] for more detail
+#'
 #'
 #' @return The output of [MCL::mcl()], renamed so that the clusters
 #' are in order of size (1 being the largest)

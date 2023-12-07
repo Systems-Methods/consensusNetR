@@ -10,7 +10,7 @@ detect_consensus_communities(rbh, expansion = 2)
 \item{rbh}{adjacency/reciprocal best hits matrix, as output by
 \code{\link[=construct_rbh_correlation_based]{construct_rbh_correlation_based()}}}
 
-\item{expansion}{expansion parameter}
+\item{expansion}{numeric value > 1 for the expansion parameter}
 }
 \value{
 The output of \code{\link[MCL:mcl]{MCL::mcl()}}, renamed so that the clusters
@@ -20,6 +20,9 @@ are in order of size (1 being the largest)
 Performs Markov Clustering on the adjacency matrix, giving the
 cluster/community number that each metagene is associated with, renamed so
 that the clusters are in order of size (1 being the largest)
+}
+\details{
+See \code{\link[MCL:mcl]{MCL::mcl()}} for more detail
 }
 \examples{
 \dontrun{

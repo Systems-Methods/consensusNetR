@@ -1,7 +1,7 @@
 #' Plot individual eigengene distributions
 #' @param eigen_list a list of community signatures (eigengenes) for studies,
 #' using the output of [calc_consensus_memberships()] as the `membership_matrix`.
-#' @param target_study_index target_study_index
+#' @param target_study_index the study you want to normalized eigengenes to for displaying the distributions. It should likely be the largest/best quality study
 #' @param filename File name
 #' @param device Device to use. Can either be a device function (e.g. png), or one of "eps", "ps", "tex" (pictex), "pdf", "jpeg", "tiff", "png", "bmp", "svg" or "wmf" (windows only).
 #' @param width Plot width in units ("in", "cm", "mm", or "px"). If not supplied, uses the size of current graphics device.

@@ -59,11 +59,13 @@ memb_list <- list(
   COAD = coad_icwgcna$community_membership
 )
 
-# Construct Meta Reciprocal Best Hits based on overlaps
+# Construct Meta Reciprocal Best Hits based on overlaps (318 communities found)
 rbh <- construct_rbh_overlap_based(memb_list, top_n = 25)
+nrow(rbh)
+## 318
 
 # RBH Heatmap Creation
-plot_rbh(rbh = rbh, memb_list = memb_list)
+plot_rbh(rbh = rbh, network_membership_list = memb_list)
 ```
 
 <figure>
@@ -75,6 +77,11 @@ alt="Reciprocal Best Hits Heatmap" />
 ``` r
 # Detect Communities in Adjacency/Reciprocal Best Hits Matrix
 consensus_comms <- detect_consensus_communities(rbh)
+# showing the first 10 communities 
+#note community 1 is a miscellaneous and will be removed
+table(consensus_comms$Cluster)[1:10]
+##    1   2   3   4   5   6   7   8   9  10 
+##  200   3   3   3   3   3   3   3   3   3 
 
 # Compute the average metagene across studies for each community
 consensus_memb <- calc_consensus_memberships(consensus_comms, memb_list)
@@ -84,6 +91,14 @@ consensus_memb <- calc_consensus_memberships(consensus_comms, memb_list)
 
 ``` r
 consensus_genes <- get_gene_community_membership(consensus_comms, memb_list, 2)
+head(consensus_genes)
+##    gene_id cluster n_studies
+##  1    A1BG      43         2
+##  2     A2M       1         2
+##  3    AACS      19         2
+##  4   AAGAB      25         2
+##  5   AASDH      40         2
+##  6    AASS      42         2
 
 # Need to use icWGCNA for individual eigengenes
 GSE39582_eigen <- icWGCNA::compute_eigengene_matrix(
@@ -102,6 +117,13 @@ coad_eigen <- icWGCNA::compute_eigengene_matrix(
 eigen_list <- list(GSE39582_eigen, read_eigen, coad_eigen)
 plot_consensus_eig_dist(eigen_list)
 ```
+
+<figure>
+<img src="man/figures/README-eig-dist-1.png"
+alt="Individual Eigengene Distributions" />
+<figcaption aria-hidden="true">Individual Eigengene
+Distributions</figcaption>
+</figure>
 
 ## Example Appendix
 

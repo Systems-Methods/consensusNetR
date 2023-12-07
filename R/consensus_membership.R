@@ -6,7 +6,7 @@
 #' @param network_membership_list a list containing community membership scores for each
 #' network. Where rownames contain unique gene ids and column names are community names
 #' @param weights weights for weighted average of based on study attributes
-#' @param gene_cohort_N gene_cohort_N
+#' @param gene_cohort_N number of studies a gene must be present in to be included
 #' @param compressIntra indicates how to deal with multiple metagenes belonging
 #' to the same community within one study-level network
 #' @param remove_misc_comm should the miscellaneous community be removed
@@ -41,6 +41,9 @@ calc_consensus_memberships <- function(consensus_comms,
                                        remove_misc_comm = TRUE,
                                        comm_prefix = "mA") {
   compressIntra <- match.arg(compressIntra)
+  if (gene_cohort_N > length(network_membership_list)) {
+    stop("gene_cohort_N can't be larger than number of studies in network_membership_list")
+  }
   n_metagenes <- lapply(network_membership_list, ncol)
   u_genes <- table(unlist(lapply(network_membership_list, rownames)))
   u_genes <- sort(names(u_genes[u_genes >= gene_cohort_N]))

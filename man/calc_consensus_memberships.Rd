@@ -24,7 +24,7 @@ network. Where rownames contain unique gene ids and column names are community n
 
 \item{weights}{weights for weighted average of based on study attributes}
 
-\item{gene_cohort_N}{gene_cohort_N}
+\item{gene_cohort_N}{number of studies a gene must be present in to be included}
 
 \item{compressIntra}{indicates how to deal with multiple metagenes belonging
 to the same community within one study-level network}

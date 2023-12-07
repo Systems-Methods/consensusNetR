@@ -18,7 +18,7 @@ plot_consensus_eig_dist(
 \item{eigen_list}{a list of community signatures (eigengenes) for studies,
 using the output of \code{\link[=calc_consensus_memberships]{calc_consensus_memberships()}} as the \code{membership_matrix}.}
 
-\item{target_study_index}{target_study_index}
+\item{target_study_index}{the study you want to normalized eigengenes to for displaying the distributions. It should likely be the largest/best quality study}
 
 \item{filename}{File name}
 
