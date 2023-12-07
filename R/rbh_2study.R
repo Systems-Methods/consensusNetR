@@ -11,6 +11,7 @@
 #' @return Matrix with rows matching the columns in net_membership_1 and columns
 #' matching the columns of net_membership_2, with values 1 indicating two metagenes are a
 #' hit, and 0 indicating that they are not.
+#' @keywords internal
 #' @examples
 #' \dontrun{
 #' rbh <- construct_2study_rbh_overlap_based(
@@ -77,9 +78,9 @@ construct_2study_rbh_overlap_based <- function(net_membership_1,
 #' @inheritParams construct_rbh_correlation_based
 #'
 #' @return Matrix with rows matching the columns in net_membership_1 and columns
-#' matching the columns of net_membership_2, with values 1 indicating two metagenes are a
-#' hit, and 0 indicating that they are not.
-#'
+#' matching the columns of net_membership_2, with values 1 indicating two
+#' metagenes are a hit, and 0 indicating that they are not.
+#' @keywords internal
 #' @examples
 #' \dontrun{
 #' rbh <- construct_2study_rbh_correlation_based(

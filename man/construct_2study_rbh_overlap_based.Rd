@@ -40,3 +40,4 @@ rbh <- construct_2study_rbh_overlap_based(
 )
 }
 }
+\keyword{internal}
